@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     use HasFactory, Notifiable;
 
@@ -18,8 +18,10 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
+        'height',
         'email',
         'password',
+        'email_verified_at',
     ];
 
     /**
@@ -40,4 +42,31 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+    
+    protected $dates = ['post_at'];
+    
+    public function quests()
+    {
+        return $this->hasMany('App\Models\Quest');
+    }
+    
+    public function possessionItems()
+    {
+        return $this->hasMany('App\Models\PossessionItem');
+    }
+    
+    public function possessionSkills()
+    {
+        return $this->hasMany('App\Models\PossessionSkills');
+    }
+    
+    public function rankings()
+    {
+        return $this->hasMany('App\Models\PossessionSkills');
+    }
+    
+    public function questItems()
+    {
+        return $this->hasMany('App\Models\QuestItems');
+    }
 }

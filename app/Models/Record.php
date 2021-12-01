@@ -8,4 +8,13 @@ use Illuminate\Database\Eloquent\Model;
 class Record extends Model
 {
     use HasFactory;
+    
+    protected $table = "records";
+    
+    protected $dates = ['post_at'];
+    
+    public function quest()
+    {
+        return $this->hasOne('App\Models\Quest');
+    }
 }
