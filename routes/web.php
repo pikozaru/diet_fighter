@@ -68,3 +68,7 @@ Route::group(['middleware' => ['auth','verified']], function(){
     Route::get('/home', 'App\Http\Controllers\HomeController@index')->name('home');
     Route::post('/home', 'App\Http\Controllers\HomeController@store')->name('home');
 });
+
+if (env('APP_ENV') === 'production') {
+    URL::forceScheme('https');
+}
