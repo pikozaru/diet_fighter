@@ -14,10 +14,8 @@ class AddUsersToUsers extends Migration
     public function up()
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('user_name')->default(0);
-            $table->integer('rank')->unsigned()->default(0);
+            $table->integer('rank')->unsigned()->default(1);
             $table->integer('total_score')->unsigned()->default(0);
-            $table->datetime('login_at')->default(0);
         });
     }
 

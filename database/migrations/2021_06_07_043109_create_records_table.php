@@ -17,7 +17,6 @@ class CreateRecordsTable extends Migration
             $table->id();
             $table->decimal('weight');
             $table->decimal('body_fat_percentage');
-            $table->string('using_items');
             $table->timestamps();
         });
     }
