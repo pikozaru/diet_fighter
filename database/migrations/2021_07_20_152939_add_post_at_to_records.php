@@ -14,7 +14,7 @@ class AddPostAtToRecords extends Migration
     public function up()
     {
         Schema::table('records', function (Blueprint $table) {
-            $table->datetime('post_at')->default(0);
+            $table->datetime('post_at')->nullable();
         });
     }
 

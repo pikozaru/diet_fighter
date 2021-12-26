@@ -14,8 +14,8 @@ class AddFilteringDateToUsers extends Migration
     public function up()
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->date('filtering_month')->default(0);
-            $table->date('filtering_year')->default(0);
+            $table->date('filtering_month')->nullable();
+            $table->date('filtering_year')->nullable();
         });
     }
 
