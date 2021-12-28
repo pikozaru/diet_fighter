@@ -19,7 +19,7 @@ class CreateEnemiesTable extends Migration
             $table->integer('max_magical_point');
             $table->integer('hit_point');
             $table->integer('magical_point');
-            $table->integer('attack_point');
+            $table->double('attack_point');
             $table->integer('defense_point');
             $table->integer('score');
             $table->timestamps();
