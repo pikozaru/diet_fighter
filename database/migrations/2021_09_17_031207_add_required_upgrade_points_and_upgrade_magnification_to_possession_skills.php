@@ -14,8 +14,8 @@ class AddRequiredUpgradePointsAndUpgradeMagnificationToPossessionSkills extends 
     public function up()
     {
         Schema::table('possession_skills', function (Blueprint $table) {
-            $table->integer('required_upgrade_points')->default(0);
-            $table->integer('upgrade_magnification')->default(2);
+            $table->double('required_upgrade_points')->default(0);
+            $table->double('upgrade_magnification')->default(2);
         });
     }
 

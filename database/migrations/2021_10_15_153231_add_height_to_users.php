@@ -14,7 +14,7 @@ class AddHeightToUsers extends Migration
     public function up()
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->integer('height')->default(170);
+            $table->double('height')->default(170);
         });
     }
 

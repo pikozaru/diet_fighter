@@ -14,7 +14,7 @@ class AddNowMaxHitPointToEnemyDatabases extends Migration
     public function up()
     {
         Schema::table('enemy_databases', function (Blueprint $table) {
-            $table->integer('now_max_hit_point')->default(0);
+            $table->double('now_max_hit_point')->default(0);
         });
     }
 

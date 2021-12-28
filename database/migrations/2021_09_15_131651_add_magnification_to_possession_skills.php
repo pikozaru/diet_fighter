@@ -14,7 +14,7 @@ class AddMagnificationToPossessionSkills extends Migration
     public function up()
     {
         Schema::table('possession_skills', function (Blueprint $table) {
-            $table->integer('magnification')->default(0);
+            $table->double('magnification')->default(0);
         });
     }
 

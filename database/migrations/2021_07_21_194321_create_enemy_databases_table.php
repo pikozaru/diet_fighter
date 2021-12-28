@@ -17,10 +17,10 @@ class CreateEnemyDatabasesTable extends Migration
             $table->id();
             $table->biginteger('quest_id');
             $table->biginteger('enemy_id');
-            $table->integer('now_hit_point')->default(0);
-            $table->integer('now_magical_point')->default(0);
-            $table->integer('now_attack_point')->default(0);
-            $table->integer('now_defense_point')->default(0);
+            $table->double('now_hit_point')->default(0);
+            $table->double('now_magical_point')->default(0);
+            $table->double('now_attack_point')->default(0);
+            $table->double('now_defense_point')->default(0);
             $table->timestamps();
         });
     }

@@ -14,7 +14,7 @@ class AddUpgradeMagnificationToSkills extends Migration
     public function up()
     {
         Schema::table('skills', function (Blueprint $table) {
-            $table->integer('upgrade_magnification')->default(2);
+            $table->double('upgrade_magnification')->default(2);
         });
     }
 

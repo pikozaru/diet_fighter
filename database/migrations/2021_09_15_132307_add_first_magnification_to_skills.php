@@ -14,7 +14,7 @@ class AddFirstMagnificationToSkills extends Migration
     public function up()
     {
         Schema::table('skills', function (Blueprint $table) {
-            $table->integer('first_magnification')->default(0);
+            $table->double('first_magnification')->default(0);
         });
     }
 
