@@ -707,27 +707,7 @@ class QuestController extends Controller
                     }
                     
                     // こちらのスキル処理
-                    if($request->input("selectSkill") === "ヒール") {
-                        $heal = Skill::where('name', "ヒール")->first();
-                        $quest->hit_point += 30 + $heal->possessionSkill->magnification;
-                        $quest->action_point -= $heal->required_action_points;
-                        if($quest->hi_potion_count >= 1) {
-                            $quest->magical_point -= 0;
-                        } else {
-                            $quest->magical_point -= $heal->consumed_magic_points;
-                        }
-                        if($quest->hit_point > 100) {
-                            $quest->hit_point = 100;
-                        }
-                        $quest->save();
-                        $enemyDataBase->save();
-                        
-                        // プレイヤーのログ内容
-                        $actionHistoryPlayer = new ActionHistory;
-                        $actionHistoryPlayer->quest_id = $quest->id;
-                        $actionHistoryPlayer->log = $user->name."はヒールを唱えた！\r\n".$user->name."のHPが回復した";
-                        $actionHistoryPlayer->save();
-                    } elseif ($request->input("selectSkill") === "ファイア") {
+                    if ($request->input("selectSkill") === "ファイア") {
                         $fire = Skill::where('name', "ファイア")->first();
                         $attackFire = $trainMultiple * $quest->attack_point * $fire->possessionSkill->magnification - $enemyDataBase->now_defense_point;
                         if($attackFire <= 0) {
@@ -799,7 +779,27 @@ class QuestController extends Controller
                     }
                 }
                 
-                if ($request->input("selectSkill") === "鍛える") {
+                if ($request->input("selectSkill") === "ヒール") {
+                    $heal = Skill::where('name', "ヒール")->first();
+                    $quest->hit_point += 30 + $heal->possessionSkill->magnification;
+                    $quest->action_point -= $heal->required_action_points;
+                    if($quest->hi_potion_count >= 1) {
+                        $quest->magical_point -= 0;
+                    } else {
+                        $quest->magical_point -= $heal->consumed_magic_points;
+                    }
+                    if($quest->hit_point > 100) {
+                        $quest->hit_point = 100;
+                    }
+                    $quest->save();
+                    $enemyDataBase->save();
+                    
+                    // プレイヤーのログ内容
+                    $actionHistoryPlayer = new ActionHistory;
+                    $actionHistoryPlayer->quest_id = $quest->id;
+                    $actionHistoryPlayer->log = $user->name."はヒールを唱えた！\r\n".$user->name."のHPが回復した";
+                    $actionHistoryPlayer->save();
+                } elseif ($request->input("selectSkill") === "鍛える") {
                     $train = Skill::where('name', "鍛える")->first();
                     $quest->action_point -= $train->required_action_points;
                     $quest->train_count = 5;
@@ -930,12 +930,12 @@ class QuestController extends Controller
                 $quest->defense_point += 1 * $levelUpCount;
                 $quest->start_judge = 4;
             }
-    
-            $quest->save();
             
             if(!$quest->enemyDataBases()->where('now_hit_point', '!=', 0)->exists() and $quest->start_judge != 4) {
                 $quest->start_judge = 2;
             }
+            
+            $quest->save();
     
             // メイン画面に戻る        
             return redirect()->route('quests.show', $quest->id);
