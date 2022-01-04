@@ -15,13 +15,13 @@ class CreateEnemiesTable extends Migration
     {
         Schema::create('enemies', function (Blueprint $table) {
             $table->id();
-            $table->integer('max_hit_point');
+            $table->double('max_hit_point');
             $table->integer('max_magical_point');
-            $table->integer('hit_point');
+            $table->double('hit_point');
             $table->integer('magical_point');
             $table->double('attack_point');
-            $table->integer('defense_point');
-            $table->integer('score');
+            $table->double('defense_point');
+            $table->double('score');
             $table->timestamps();
         });
     }
