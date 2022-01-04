@@ -101,7 +101,7 @@
                             <div class="col-3 text-center">
                                 @if($bodyFatPercentageSub > 0)
                                     <b class="number-sub" style="color: #EF454A;">+{{$bodyFatPercentageSub}}%</b>
-                                @elseif($bodyFatPercentageSub == 0 or $bodyFatPercentageSub == -$recordLastTime->body_fat_percentage)
+                                @elseif($bodyFatPercentageSub == 0)
                                     <b class="heading-color number-sub">±0%</b>
                                 @elseif($bodyFatPercentageSub < 0)
                                     <b class="number-sub" style="color: #66cdaa;">{{$bodyFatPercentageSub}}%</b>
@@ -195,7 +195,7 @@
                             <div class="col-3 text-center">
                                 @if($bodyFatPercentageSub > 0)
                                     <b class="number-sub" style="color: #EF454A;">+{{$bodyFatPercentageSub}}%</b>
-                                @elseif($bodyFatPercentageSub == 0 or $bodyFatPercentageSub == -$recordLastTime->body_fat_percentage)
+                                @elseif($bodyFatPercentageSub == 0)
                                     <b class="heading-color number-sub">±0%</b>
                                 @elseif($bodyFatPercentageSub < 0)
                                     <b class="number-sub" style="color: #66cdaa;">{{$bodyFatPercentageSub}}%</b>
