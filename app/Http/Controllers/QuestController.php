@@ -36,8 +36,8 @@ class QuestController extends Controller
         $record = Record::where('user_id', Auth::id())->orderBy('created_at', 'desc')->first();
         $possessionItems = PossessionItem::where('user_id', Auth::id())->get();
         $carbon = Carbon::now();
-        $quest = Quest::where('user_id', Auth::id())->orderBy('create_at', 'desc')->first();
-        $questEndAt = Quest::where('user_id', Auth::id())->orderBy('create_at', 'desc')->value('end_at');
+        $quest = Quest::where('user_id', Auth::id())->orderBy('created_at', 'desc')->first();
+        $questEndAt = Quest::where('user_id', Auth::id())->orderBy('created_at', 'desc')->value('end_at');
         $questId = Quest::where('user_id', Auth::id())->orderBy('created_at', 'desc')->value('id');
         if(QuestItems::where('user_id', Auth::id())->get() !== null){
             $questItems = QuestItems::where('user_id', Auth::id())->get();
@@ -1039,7 +1039,7 @@ class QuestController extends Controller
     public function finish(Request $request, Quest $quest)
     {
         $user = Auth::user();
-        $quest = Quest::where('user_id', Auth::id())->orderBy('create_at', 'desc')->first();
+        $quest = Quest::where('user_id', Auth::id())->orderBy('created_at', 'desc')->first();
         if($request->get('finish') and $quest->score > 0) {
             Ranking::where('user_id', Auth::id())->delete();
             $ranking = new Ranking;
