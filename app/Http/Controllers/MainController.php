@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Record;
 use App\Models\Quest;
+use App\Models\Item;
+use App\Models\PossessionItem;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -16,9 +18,21 @@ class MainController extends Controller
      *
      * @return Response
     */
-
+    
     public function index(Request $request, Record $record)
     {
+        $possessionItems = PossessionItem::where('user_id', Auth::id())->count();
+        $items = Item::all();
+        
+        if($possessionItems == 0) {
+            foreach($items as $item) {
+                $addPossessionItemDataBase = new PossessionItem();
+                $addPossessionItemDataBase->user_id = Auth::id();
+                $addPossessionItemDataBase->item_id = $item->id;
+                $addPossessionItemDataBase->save();
+            }
+        }
+        
         $user = Auth::user();
         $record = Record::where('user_id', Auth::id())->orderBy('created_at', 'desc')->first();
         $recordLastTime = Record::where('user_id', Auth::id())->orderBy('created_at', 'desc')->skip(1)->first();
