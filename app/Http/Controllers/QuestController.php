@@ -696,6 +696,39 @@ class QuestController extends Controller
             
             $sumAttacked = 0;
             
+            //　ヒーラー・バフスキル
+            if ($request->input("selectSkill") === "ヒール") {
+                $heal = Skill::where('name', "ヒール")->first();
+                $quest->hit_point += 30 + $heal->possessionSkill->magnification;
+                $quest->action_point -= $heal->required_action_points;
+                if($quest->hi_potion_count >= 1) {
+                    $quest->magical_point -= 0;
+                } else {
+                    $quest->magical_point -= $heal->consumed_magic_points;
+                }
+                if($quest->hit_point > 100) {
+                    $quest->hit_point = 100;
+                }
+                $quest->save();
+                
+                // プレイヤーのログ内容
+                $actionHistoryPlayer = new ActionHistory;
+                $actionHistoryPlayer->quest_id = $quest->id;
+                $actionHistoryPlayer->log = $user->name."はヒールを唱えた！\r\n".$user->name."のHPが回復した";
+                $actionHistoryPlayer->save();
+            } elseif ($request->input("selectSkill") === "鍛える") {
+                $train = Skill::where('name', "鍛える")->first();
+                $quest->action_point -= $train->required_action_points;
+                $quest->train_count = 5;
+                $quest->save();
+                
+                // プレイヤーのログ内容
+                $actionHistoryPlayer = new ActionHistory;
+                $actionHistoryPlayer->quest_id = $quest->id;
+                $actionHistoryPlayer->log = $user->name."はとにかく鍛えた\r\nおかげで攻撃力が上がった！";
+                $actionHistoryPlayer->save();
+            }
+            
             foreach ($enemyDataBases as $enemyDataBase) {
                 // 攻撃対象（ブラウザフォーム側でチェックされた）かどうかを確認する
                 if (in_array($enemyDataBase->id, (array)$targetEnemyDataBaseIds)) {
@@ -706,7 +739,7 @@ class QuestController extends Controller
                         $trainMultiple = 1;
                     }
                     
-                    // こちらのスキル処理
+                    // 攻撃スキル処理
                     if ($request->input("selectSkill") === "ファイア") {
                         $fire = Skill::where('name', "ファイア")->first();
                         $attackFire = $trainMultiple * $quest->attack_point * $fire->possessionSkill->magnification - $enemyDataBase->now_defense_point;
@@ -777,39 +810,6 @@ class QuestController extends Controller
                         $actionHistoryPlayer->log = $user->name."の貫通攻撃！\r\n".$enemyDataBase->enemy->name."に".$attackPenetration."のダメージ";
                         $actionHistoryPlayer->save();
                     }
-                }
-                
-                if ($request->input("selectSkill") === "ヒール") {
-                    $heal = Skill::where('name', "ヒール")->first();
-                    $quest->hit_point += 30 + $heal->possessionSkill->magnification;
-                    $quest->action_point -= $heal->required_action_points;
-                    if($quest->hi_potion_count >= 1) {
-                        $quest->magical_point -= 0;
-                    } else {
-                        $quest->magical_point -= $heal->consumed_magic_points;
-                    }
-                    if($quest->hit_point > 100) {
-                        $quest->hit_point = 100;
-                    }
-                    $quest->save();
-                    $enemyDataBase->save();
-                    
-                    // プレイヤーのログ内容
-                    $actionHistoryPlayer = new ActionHistory;
-                    $actionHistoryPlayer->quest_id = $quest->id;
-                    $actionHistoryPlayer->log = $user->name."はヒールを唱えた！\r\n".$user->name."のHPが回復した";
-                    $actionHistoryPlayer->save();
-                } elseif ($request->input("selectSkill") === "鍛える") {
-                    $train = Skill::where('name', "鍛える")->first();
-                    $quest->action_point -= $train->required_action_points;
-                    $quest->train_count = 5;
-                    $quest->save();
-                    
-                    // プレイヤーのログ内容
-                    $actionHistoryPlayer = new ActionHistory;
-                    $actionHistoryPlayer->quest_id = $quest->id;
-                    $actionHistoryPlayer->log = $user->name."はとにかく鍛えた\r\nおかげで攻撃力が上がった！";
-                    $actionHistoryPlayer->save();
                 }
                 
                 // 攻撃対象（ブラウザフォーム側でチェックされた）かどうかを確認する
