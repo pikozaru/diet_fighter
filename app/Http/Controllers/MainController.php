@@ -135,7 +135,7 @@ class MainController extends Controller
         
         $recordGetActionPoint->save();
         
-        $quest = Quest::where('user_id', Auth::id())->orderBy('creat_at', 'desc')->first();
+        $quest = Quest::where('user_id', Auth::id())->orderBy('id', 'desc')->first();
         if($quest !== null and $carbonJapaneseNotation < $quest->end_at) {
             $quest->action_point += $recordGetActionPoint->get_action_point;
             $quest->save();
