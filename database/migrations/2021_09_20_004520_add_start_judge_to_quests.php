@@ -14,7 +14,7 @@ class AddStartJudgeToQuests extends Migration
     public function up()
     {
         Schema::table('quests', function (Blueprint $table) {
-            $table->boolean('start_judge')->default(1);
+            $table->integer('start_judge')->default(1);
         });
     }
 
