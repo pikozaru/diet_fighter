@@ -85,7 +85,7 @@ class QuestController extends Controller
         $quest->max_magical_point = 100;
         $quest->hit_point = 100;
         $quest->magical_point = 100;
-        $quest->attack_point = 10;
+        $quest->attack_point = 15;
         $quest->defense_point = 5;
         $quest->exp = 0;
         $quest->save();
@@ -273,7 +273,7 @@ class QuestController extends Controller
                 $quest->hi_potion_count -= 1;
             }
             
-            if ($quest->hit_point < 0) {
+            if ($quest->hit_point <= 0) {
                 $quest->hit_point = 0;
             }
             
@@ -411,6 +411,7 @@ class QuestController extends Controller
 
                 if ($quest->hit_point < 0) {
                     $quest->hit_point = 0;
+                    $quest->save();
                 }
                 
                 // ユーザの死活判定

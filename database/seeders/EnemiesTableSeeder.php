@@ -22,7 +22,7 @@ class EnemiesTableSeeder extends Seeder
             'magical_point' => '0',
             'attack_point' => '7.6',
             'defense_point' => '2',
-            'score' => '10'
+            'score' => '30'
         ]);
         
         Enemies::create([
@@ -33,7 +33,7 @@ class EnemiesTableSeeder extends Seeder
             'magical_point' => '0',
             'attack_point' => '7.8',
             'defense_point' => '5',
-            'score' => '25'
+            'score' => '50'
         ]);
         
         Enemies::create([
@@ -44,7 +44,7 @@ class EnemiesTableSeeder extends Seeder
             'magical_point' => '0',
             'attack_point' => '8',
             'defense_point' => '10',
-            'score' => '40'
+            'score' => '70'
         ]);
         
         Enemies::create([
@@ -55,7 +55,7 @@ class EnemiesTableSeeder extends Seeder
             'magical_point' => '0',
             'attack_point' => '8.2',
             'defense_point' => '7',
-            'score' => '45'
+            'score' => '80'
         ]);
         
         Enemies::create([
@@ -66,7 +66,7 @@ class EnemiesTableSeeder extends Seeder
             'magical_point' => '0',
             'attack_point' => '8',
             'defense_point' => '10',
-            'score' => '50'
+            'score' => '75'
         ]);
         
         Enemies::create([
@@ -77,7 +77,7 @@ class EnemiesTableSeeder extends Seeder
             'magical_point' => '0',
             'attack_point' => '7.8',
             'defense_point' => '500',
-            'score' => '200'
+            'score' => '500'
         ]);
         
         Enemies::create([
@@ -88,17 +88,17 @@ class EnemiesTableSeeder extends Seeder
             'magical_point' => '0',
             'attack_point' => '7.8',
             'defense_point' => '1000',
-            'score' => '1000'
+            'score' => '5000'
         ]);
         
         Enemies::create([
             'name' => '魂喰',
-            'max_hit_point' => '50',
+            'max_hit_point' => '10',
             'max_magical_point' => '0',
             'hit_point' => '50',
             'magical_point' => '0',
-            'attack_point' => '9',
-            'defense_point' => '15',
+            'attack_point' => '15',
+            'defense_point' => '20',
             'score' => '60'
         ]);
         
@@ -110,7 +110,7 @@ class EnemiesTableSeeder extends Seeder
             'magical_point' => '0',
             'attack_point' => '8.3',
             'defense_point' => '8',
-            'score' => '43'
+            'score' => '100'
         ]);
         
         Enemies::create([
@@ -121,7 +121,7 @@ class EnemiesTableSeeder extends Seeder
             'magical_point' => '0',
             'attack_point' => '7.9',
             'defense_point' => '5',
-            'score' => '30'
+            'score' => '90'
         ]);
         
         Enemies::create([
@@ -132,7 +132,7 @@ class EnemiesTableSeeder extends Seeder
             'magical_point' => '0',
             'attack_point' => '8',
             'defense_point' => '15',
-            'score' => '68'
+            'score' => '110'
         ]);
         
         Enemies::create([
@@ -143,7 +143,7 @@ class EnemiesTableSeeder extends Seeder
             'magical_point' => '0',
             'attack_point' => '8.3',
             'defense_point' => '8',
-            'score' => '58'
+            'score' => '95'
         ]);
         
         Enemies::create([
