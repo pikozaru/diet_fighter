@@ -972,7 +972,7 @@ class QuestController extends Controller
                     $addEnemyDataBase->save();
                 }
                 
-                if(Quest::where('user_id', Auth::id())->whereBetween('enemy_id', [13, 16])->get()->count() >= 2) {
+                if(EnemyDatabase::where('user_id', Auth::id())->whereBetween('enemy_id', [13, 16])->get()->count() >= 2) {
                     $deleteBoss = EnemyDatabase::where('quest_id', $quest->id)->first();
                     $deleteBoss->delete();
                 }
