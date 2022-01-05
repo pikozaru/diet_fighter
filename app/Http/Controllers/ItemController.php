@@ -17,7 +17,7 @@ class ItemController extends Controller
     public function index()
     {
         $items = Item::all();
-        $possessionItems = PossessionItem::where('user_id', Auth::id())->get();//where('user_id', Auth::id());
+        $possessionItems = PossessionItem::where('user_id', Auth::id())->orderBy('id', 'desc')->get();//where('user_id', Auth::id());
         return view('items.index', compact('items', 'possessionItems'));
     }
 
@@ -29,7 +29,7 @@ class ItemController extends Controller
 
     public function create()
     {
-        $possessionItems = PossessionItem::where('user_id', Auth::id())->get();
+        $possessionItems = PossessionItem::where('user_id', Auth::id())->orderBy('id', 'desc')->get();
         
         $possessionItemHP = PossessionItem::where('user_id', Auth::id())->where('item_id', 1)->first();
         $possessionItemMP = PossessionItem::where('user_id', Auth::id())->where('item_id', 2)->first();
