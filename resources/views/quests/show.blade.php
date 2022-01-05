@@ -207,19 +207,6 @@
         <div class="container easy_information">
             <div class="row justify-content-center">
                 <div class="col-11 text-center" style="padding:0;">
-                    @if($quest->train_count > 0)
-                        <p>攻撃力アップ：{{$quest->train_count}}</p>
-                    @endif
-                    @if($quest->score_up_count > 0)
-                        <p>スコアUP：{{$quest->score_up_count}}</p>
-                    @endif
-                    @if($quest->point_count > 0)
-                        <p>ポイントUP：{{$quest->point_count}}</p>
-                    @endif
-                    @if($quest->hi_potion_count > 0)
-                        <p>MP∞：{{$quest->hi_potion_count}}</p>
-                    @endif
-                    
                     <h5>{{$user->name}}</h5>
                     <div class="container">
                         <div class="row justify-content-center mb-2">
