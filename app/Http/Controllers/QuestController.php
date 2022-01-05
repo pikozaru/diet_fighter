@@ -1019,29 +1019,9 @@ class QuestController extends Controller
         $user = Auth::user();
         $carbon = new Carbon('now');
         $rankUpJudge = $user->total_score - self::calcurateRequiredRank($user->rank);
+        $nowRanking = Ranking::where('user_id', Auth::id())->first();
         
-        $quest->start_judge = 5;
-        
-        return view('quests.result', compact('quest', 'carbon', 'user', 'rankUpJudge'));
-    }
-    
-    
-    public function resultLose(Request $request, Quest $quest)
-    {
-        $user = Auth::user();
-        $rankUpJudge = $user->total_score - self::calcurateRequiredRank($user->rank);
-        
-        $quest->start_judge = 5;
-        
-        return view('quests.resultLose', compact('quest', 'user', 'rankUpJudge'));
-    }
-    
-    
-    public function finish(Request $request, Quest $quest)
-    {
-        $user = Auth::user();
-        $quest = Quest::where('user_id', Auth::id())->orderBy('created_at', 'desc')->first();
-        if($request->get('finish') and $quest->score > 0) {
+        if($quest->score > $nowRanking->score) {
             Ranking::where('user_id', Auth::id())->delete();
             $ranking = new Ranking;
             $ranking->user_id = Auth::id();
@@ -1053,6 +1033,30 @@ class QuestController extends Controller
             $ranking->value = $quest->value;
             $ranking->save();
         }
+        
+        $quest->start_judge = 5;
+        $quest->save();
+        
+        return view('quests.result', compact('quest', 'carbon', 'user', 'rankUpJudge'));
+    }
+    
+    
+    public function resultLose(Request $request, Quest $quest)
+    {
+        $user = Auth::user();
+        $rankUpJudge = $user->total_score - self::calcurateRequiredRank($user->rank);
+        
+        $quest->start_judge = 5;
+        $quest->save();
+        
+        return view('quests.resultLose', compact('quest', 'user', 'rankUpJudge'));
+    }
+    
+    
+    public function finish(Request $request, Quest $quest)
+    {
+        $user = Auth::user();
+        $quest = Quest::where('user_id', Auth::id())->orderBy('created_at', 'desc')->first();
         
         $user->clear_score = 0;
         $user->save();

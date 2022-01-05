@@ -18,7 +18,7 @@ class SkillsTableSeeder extends Seeder
             'name' => 'ヒール',
             'description' => '自身のHPを回復する',
             'required_action_points' => '5',
-            'consumed_magic_points' => '5',
+            'consumed_magic_points' => '3',
             'required_points' => '100',
             'first_magnification' => '0'
         ]);
@@ -27,7 +27,7 @@ class SkillsTableSeeder extends Seeder
             'name' => 'ファイア',
             'description' => '敵に大ダメージを与える',
             'required_action_points' => '5',
-            'consumed_magic_points' => '7',
+            'consumed_magic_points' => '5',
             'required_points' => '500',
             'first_magnification' => '1.2'
         ]);
@@ -37,7 +37,7 @@ class SkillsTableSeeder extends Seeder
             'name' => 'アイス',
             'description' =>'敵に大ダメージを与え、数ターン凍結させる',
             'required_action_points' => '5',
-            'consumed_magic_points' => '10',
+            'consumed_magic_points' => '7',
             'required_points' => '1500',
             'first_magnification' => '1.2'
         ]);
@@ -47,7 +47,7 @@ class SkillsTableSeeder extends Seeder
             'name' => 'ポイズン',
             'description' => '敵に少しずつダメージを与える',
             'required_action_points' => '5',
-            'consumed_magic_points' => '7',
+            'consumed_magic_points' => '5',
             'required_points' => '1500',
             'first_magnification' => '0.3'
         ]);
