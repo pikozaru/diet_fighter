@@ -26,10 +26,10 @@ class RankingController extends Controller
         $rankingScores7 = Ranking::where('value', 7)->orderBy('score', 'desc')->get();
         $rankingScores14 = Ranking::where('value', 14)->orderBy('score', 'desc')->get();
         $rankingScores30 = Ranking::where('value', 30)->orderBy('score', 'desc')->get();
-        $rankingScoresFilter7 = Ranking::where('value', 7)->orderBy('score', 'desc')->take(100)->get();
-        $rankingScoresFilter14 = Ranking::where('value', 14)->orderBy('score', 'desc')->take(100)->get();
-        $rankingScoresFilter30 = Ranking::where('value', 30)->orderBy('score', 'desc')->take(100)->get();
-        $rankingTotalScores = User::where('total_score', '>' , 0)->orderBy('total_score', 'desc')->take(100)->get();
+        $rankingScoresFilter7 = Ranking::where('value', 7)->orderBy('score', 'desc')->take(10)->get();
+        $rankingScoresFilter14 = Ranking::where('value', 14)->orderBy('score', 'desc')->take(10)->get();
+        $rankingScoresFilter30 = Ranking::where('value', 30)->orderBy('score', 'desc')->take(10)->get();
+        $rankingTotalScores = User::where('total_score', '>' , 0)->orderBy('total_score', 'desc')->take(10)->get();
         $userName7 = [];
         $userName14 = [];
         $userName30 = [];
