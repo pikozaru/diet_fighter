@@ -1199,7 +1199,7 @@ color: blue;
   font-size: clamp(17px, 6vw, 23px);
   position:fixed;
   left:10px;
-  bottom:60px;
+  bottom:30px;
   z-index:1;
 }
 

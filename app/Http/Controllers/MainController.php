@@ -121,23 +121,22 @@ class MainController extends Controller
         $record->save();
         
         $recordSkip1Get = Record::where('user_id', Auth::id())->orderBy('id', 'desc')->skip(1)->first();
-        $recordGetActionPoint = Record::where('user_id', Auth::id())->orderBy('id', 'desc')->first();
         if($recordSkip1Get !== null) {
-            $recordGetActionPoint->get_action_point = calcurateActionPoint($recordGetActionPoint - $recordSkip1Get, $record->weight);
-            if(calcurateActionPoint($recordGetActionPoint - $recordSkip1Get, $record->weight) < 50) {
-                $recordGetActionPoint->get_action_point = 50;
-            } elseif(calcurateActionPoint($recordGetActionPoint - $recordSkip1Get, $record->weight) > 150) {
-                $recordGetActionPoint->get_action_point = 150;
+            $record->get_action_point = self::calcurateActionPoint($recordSkip1Get->weight, $record->weight);
+            if(self::calcurateActionPoint($recordSkip1Get->weight, $record->weight) < 50) {
+                $record->get_action_point = 50;
+            } elseif(self::calcurateActionPoint($recordSkip1Get->weight, $record->weight) > 150) {
+                $record->get_action_point = 150;
             }
         } else {
-            $recordGetActionPoint->get_action_point = 100;
+            $record->get_action_point = 100;
         }
         
-        $recordGetActionPoint->save();
+        $record->save();
         
         $quest = Quest::where('user_id', Auth::id())->orderBy('created_at', 'desc')->first();
         if($quest !== null and $carbonJapaneseNotation < $quest->end_at) {
-            $quest->action_point += $recordGetActionPoint->get_action_point;
+            $quest->action_point += $record->get_action_point;
             $quest->save();
         }
         
@@ -172,15 +171,14 @@ class MainController extends Controller
         return redirect()->route('mains.index', ['main' => $record->id]);
     }
 
-    private static function calcurateActionPoint($subWeight, $nowWeight)
+    private static function calcurateActionPoint($beforeWeight, $nowWeight)
     {
-        $base_action_point = 100;
+        $baseActionPoint = 100;
         
-        $nowWeight_multiple -= $nowWeight * 0.3;
-        $multiple = (100 - $nowWeight_multiple);
-        $action_point = $base_action_point - ($subWeight * $multiple);
+        $addActionPoint = ($beforeWeight - $nowWeight) * 50;
+        $actionPoint = $baseActionPoint + $addActionPoint;
         
-        return floor($action_point);
+        return floor($actionPoint);
     }
     
     private static function calcurateRequiredLevel($level)
