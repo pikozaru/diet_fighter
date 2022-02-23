@@ -3,6 +3,8 @@
 @section('quest_content')
 <form name="form1" method="POST" action="{{ route('quests.command', $quest->id) }}">
     {{ csrf_field() }}
+    
+    <!--リザルト-->
     @if($quest->start_judge == 2 or $quest->start_judge == 4)
         <div class="battle_background position-relative">
             <div class="text-log">
@@ -13,6 +15,7 @@
             </button>
         </div>
         
+        <!--レベルアップの表記-->
         @if($quest->start_judge == 4)
             <div class="card card-body shadow-sm mt-2 mb-2">
                 <div class="container">
@@ -99,12 +102,16 @@
                 </div>
             </div>
         </div>
+    <!--クエスト画面-->
     @else        
         <div class="battle_background position-relative">
+            
+            <!--クエスト初回の表記-->
             @if($quest->start_judge == 1)
                 <div class="text-log">
                     <h4 class="text-center position-absolute" style="top:10px; right:0; left:0; font-family: DotGothic16;">敵が現れた！</h4>
                 </div>
+            <!--クエスト2回目以降の表記-->
             @else
                 <div class="text-log">
                     @foreach($actionHistories as $actionHistory)
@@ -116,6 +123,8 @@
                 <div class="row justify-content-center d-flex align-items-end">    
                     @foreach ($quest->enemyDataBases as $enemyDatabase)
                         <div class="col text-center">
+                            
+                            <!--敵のHPによって「状態名」の色を変更-->
                             @if($enemyDatabase->now_hit_point / $enemyDatabase->now_max_hit_point > 0.5)
                                 <div style="color: #ffffff;">    
                                     @if($enemyDatabase->frozen_count > 0)
@@ -145,6 +154,7 @@
                                 </div>
                             @endif
                             
+                            <!--敵画像をidによってそれぞれ適用-->
                             @if($enemyDatabase->enemy_id == 1)
                                 <img src="{{asset('img/slime.gif')}}">
                             @elseif($enemyDatabase->enemy_id == 2)
@@ -185,6 +195,7 @@
                                 <img src="{{asset('img/dark_dragon.gif')}}" style="width:60px;">
                             @endif
                             
+                            <!--敵のHPによって敵の「名前」の色を変更-->
                             @if($enemyDatabase->now_hit_point / $enemyDatabase->now_max_hit_point > 0.5)
                                 <div style="color: #ffffff;">    
                                     <p style="font-size:clamp(12px,3vw,16px);">{{$enemyDatabase->enemy->name}}</p>
@@ -204,6 +215,7 @@
             </div>
         </div>
         
+        <!--プレイヤー情報-->
         <div class="container easy_information">
             <div class="row justify-content-center">
                 <div class="col-11 text-center" style="padding:0;">
@@ -270,6 +282,7 @@
             </div>
         </div>
         
+        <!--クエスト終了ボタン（クエスト期間中は表示なし）-->
         @if($carbon->format('Y-m-d h:i') >= $quest->end_at->format('Y-m-d h:i'))
             <div class="text-center">
                 <button type="button" class="diet-button diet-button-result w-75 mt-3" data-toggle="modal" data-target="#result">
@@ -277,7 +290,8 @@
                     <p style="font-size:10px; margin:0;">クエスト期間が終了しました</p>
                 </button>
             </div>    
-                
+            
+            <!--モーダル（リザルト）-->    
             <div class="modal fade" id="result" tabindex="-1" role="dialog" aria-labelledby="label1" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered" role="document">
                     <div class="modal-content">
@@ -304,21 +318,26 @@
             </div>
         @endif
         
+        <!--コマンド選択-->
         <div class="container mt-3">
             <div class="row justify-content-center">
+                
+                <!--攻撃-->
                 <div class="col text-center">
+                    <!--アクションポイント不足で選択不可能-->
                     @if($quest->action_point < 5)
                         <button class="diet-button diet-button-command-danger" disabled>
                             <p style="line-height:1.5;">攻撃</p>
                             <p class="position-relative" style="top:-10px; font-size:clamp(10px,3vw,12px); line-height:1; white-space:nowrap;">消費行動力：5</p>
                         </button>
+                    <!--選択可能-->
                     @elseif($quest->action_point >= 5)
                         <button type="button" class="diet-button diet-button-command" data-toggle="modal" data-target="#attack">
                             <p style="line-height:1.5;">攻撃</p>
                         <p class="position-relative" style="top:-10px; font-size:clamp(10px,3vw,12px); line-height:1; white-space:nowrap;">消費行動力：5</p>
                         </button>
                             
-                        <!-- モーダル -->
+                        <!--モーダル（敵選択）-->
                         <div class="modal fade" id="attack" tabindex="-1" role="dialog" aria-labelledby="label1" aria-hidden="true">
                             <div class="modal-dialog modal-dialog-centered" role="document">
                                 <div class="modal-content">
@@ -330,6 +349,8 @@
                                             <div class="container mb-3">
                                                 <div class="row justify-content-center d-flex align-items-end">
                                                     <div class="col-7 text-left">
+                                                        
+                                                        <!--敵のHPによって敵の（名前）の色を変更-->
                                                         @if($enemyDatabase->now_hit_point / $enemyDatabase->now_max_hit_point > 0.5)
                                                             <h5 class="list-arrow-enemy">{{$enemyDatabase->enemy->name}}</h5>
                                                         @elseif($enemyDatabase->now_hit_point / $enemyDatabase->now_max_hit_point <= 0.5 and $enemyDatabase->now_hit_point / $enemyDatabase->now_max_hit_point >= 0.3)
@@ -356,12 +377,16 @@
                         </div>
                     @endif
                 </div>
+                
+                <!--防御-->
                 <div class="col text-center">
+                    <!--アクションポイント不足で選択不可能-->
                     @if($quest->action_point < 2)
                         <button class="diet-button diet-button-command-danger" disabled>
                             <p style="line-height:1.5;">防御</p>
                             <p class="position-relative" style="top:-10px; font-size:clamp(10px,3vw,12px); line-height:1; white-space:nowrap;">消費行動力：2</p>
                         </button>
+                    <!--選択可能-->
                     @elseif($quest->action_point >= 2)
                         <button class="diet-button diet-button-command" type="submit" name="defense" value="defense">
                             <p style="line-height:1.5;">防御</p>
@@ -371,11 +396,15 @@
                 </div>
             </div>
             <div class="row justify-content-center mt-3 mb-3">
+                
+                <!--アイテム-->
                 <div class="col text-center">
                     <button type="button" class="diet-button diet-button-command" data-toggle="modal" data-target="#item">
                         アイテム
                     </button>
                 </div>
+                
+                <!--スキル-->
                 <div class="col text-center">
                     @if($possessionSkillsEmpty)
                         <button type="button" class="diet-button diet-button-command" data-toggle="modal" data-target="#skillNull">
@@ -390,7 +419,7 @@
             </div>
         </div>
         
-        <!-- モーダル -->
+        <!--モーダル（スキルなし）-->
         <div class="modal fade" id="skillNull" tabindex="-1" role="dialog" aria-labelledby="label1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered" role="document">
                 <div class="modal-content">
@@ -411,6 +440,7 @@
              </div>
         </div>
         
+        <!--モーダル（スキルあり）-->
         <div class="modal fade" id="skill" tabindex="-1" role="dialog" aria-labelledby="label1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered" role="document">
                 <div class="modal-content">
@@ -421,6 +451,8 @@
                         <form name="form1" method="POST" action="{{ route('quests.command', $quest->id) }}">
                             {{ csrf_field() }}
                             @foreach($possessionSkills as $possessionSkill)
+                                
+                                <!--ヒール or 鍛える-->
                                 @if($possessionSkill->skill->name === "ヒール" or $possessionSkill->skill->name === "鍛える")
                                     <div class="card card-body">
                                         <h5 class="mb-2">{{$possessionSkill->skill->name}}</h5>
@@ -430,16 +462,21 @@
                                             <br>
                                             <p class="list-arrow-sub">消費行動力：{{$possessionSkill->skill->required_action_points}}</p>
                                         </div>
+                                        
+                                        <!--MPまたはアクションポイントが不足している場合-->
                                         @if($quest->magical_point < $possessionSkill->skill->consumed_magic_points or $quest->action_point < $possessionSkill->skill->required_action_points)
                                             <div class="text-right">    
                                                 <button class="diet-button diet-button-danger float-right" disabled>
+                                                    <!--MP不足で選択不可能-->
                                                     @if($quest->magical_point < $possessionSkill->skill->consumed_magic_points)
                                                         <p>MPが足りない！</p>
+                                                    <!--アクションポイント不足で選択不可能-->
                                                     @elseif($quest->action_point < $possessionSkill->skill->required_action_points)
                                                         <p>ポイントが足りない！</p>
                                                     @endif
                                                 </button>
                                             </div>
+                                        <!--MPとアクションポイントがある場合-->
                                         @elseif($quest->magical_point >= $possessionSkill->skill->consumed_magic_points and $quest->action_point >= $possessionSkill->skill->required_action_points)
                                             <div class="text-right">    
                                                 <button class="diet-button diet-button-command-enter text-right" name="selectSkill" type="submit" value="{{$possessionSkill->skill->name}}">
@@ -449,6 +486,8 @@
                                             </div>
                                         @endif
                                     </div>
+                                
+                                <!--それ以外のスキル-->
                                 @else
                                     <div class="card card-body shadow-sm">
                                         <h5 class="mb-4">{{$possessionSkill->skill->name}}</h5>
@@ -460,25 +499,33 @@
                                         </div>
                                         <div class="cp_linetab">
                                             
+                                            <!--MPまたはアクションポイントが不足している場合-->
                                             @if($quest->magical_point < $possessionSkill->skill->consumed_magic_points or $quest->action_point < $possessionSkill->skill->required_action_points)
                                                 <button class="diet-button diet-button-danger" disabled>
+                                                    <!--MP不足で選択不可能-->
                                                     @if($quest->magical_point < $possessionSkill->skill->consumed_magic_points)
                                                         <p>MPが足りない！</p>
+                                                    <!--アクションポイント不足で選択不可能-->
                                                     @elseif($quest->action_point < $possessionSkill->skill->required_action_points)
                                                         <p>ポイントが足りない！</p>
                                                     @endif
                                                 </button>
+                                            <!--MPとアクションポイントがある場合-->
                                             @elseif($quest->magical_point >= $possessionSkill->skill->consumed_magic_points and $quest->action_point >= $possessionSkill->skill->required_action_points)
+                                                <!--ドロップアウトボタン-->
                                                 <input class="cp_linetab-input" id="{{$possessionSkill->skill->name}}" name="selectSkill" type="radio" value="{{$possessionSkill->skill->name}}" onclick="radioDeselection(this, {{$possessionSkill->skill_id}})">
                                                 <label class="cp_linetab-label" for="{{$possessionSkill->skill->name}}">使う</label>
                                             @endif
                                             
+                                            <!--ドロップアウト内容-->
                                             <div class="cp_linetab-content">
                                                 <p>敵を選択</p>
                                                 @foreach ($quest->enemyDataBases as $enemyDatabase)
                                                     <div class="container mb-3">
                                                         <div class="row justify-content-center d-flex align-items-end">
                                                             <div class="col-7 text-left">
+                                                                
+                                                                <!--敵のHPによって敵の（名前）の色を変更-->
                                                                 @if($enemyDatabase->now_hit_point / $enemyDatabase->now_max_hit_point > 0.5)
                                                                     <h5 class="list-arrow-enemy">{{$enemyDatabase->enemy->name}}</h5>
                                                                 @elseif($enemyDatabase->now_hit_point / $enemyDatabase->now_max_hit_point <= 0.5 and $enemyDatabase->now_hit_point / $enemyDatabase->now_max_hit_point >= 0.3)
@@ -511,6 +558,7 @@
             </div>            
         </div>
         
+        <!--モーダル（アイテム）-->
         <div class="modal fade" id="item" tabindex="-1" role="dialog" aria-labelledby="label1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered" role="document">
                 <div class="modal-content">
@@ -520,10 +568,16 @@
                     <div class="modal-body text-center">
                         <form name="formItem" method="POST" action="{{ route('quests.command', $quest->id) }}">
                             {{ csrf_field() }}
+                            
+                            <!--アイテム持ち込みなし-->
                             @if($questItems->isEmpty())
                                 <h5 style="color:#999999;">アイテムがありません</h5>
                             @endif
+                            
+                            <!--アイテム持ち込みあり-->
                             @foreach($questItems as $questItem)
+                                
+                                <!--アイテム個数が0の場合-->
                                 @if($questItem->possession_number == 0)    
                                     <div class="card card-body shadow-sm" style="color:#999999;">
                                         <h5 class="mb-4">{{$questItem->item->name}}</h5>
@@ -535,6 +589,8 @@
                                             </button>
                                         </div>
                                     </div>
+                                
+                                <!--アイテム個数が1の場合-->
                                 @else
                                     <div class="card card-body shadow-sm">
                                         <h5 class="mb-4">{{$questItem->item->name}}</h5>
@@ -559,14 +615,32 @@
     @endif
 </form>
 
-<!-- モーダル -->
+<!--モーダル（ステータス）-->
 <div class="modal fade" id="status" tabindex="-1" role="dialog" aria-labelledby="label1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
             <div class="text-center mt-4 mb-2 pb-1" style="border-bottom: 2.1px solid #e8e8e8;" id="label1">
                 <h4>ステータス</h4>
             </div>
+            
+            <!--ステータス内容-->
             <div class="modal-body text-center">
+                <!--目標-->
+                <h4 class="under">目標</h4>
+                <div class="container mb-3" style="border-bottom: 1px solid #ffcb42;">
+                    <div class="row justify-content-center d-flex align-items-end">
+                        <div class="col text-center">
+                            <p style="font-size:35px;"><b>{{$quest->weight_after}}</b><span style="font-size:16px;">kg</span></p>
+                        </div>
+                        <div class="col text-center">
+                            @if ($quest->body_fat_percentage_after == null)
+                                <p style="font-size:35px;"><b>--</b><span style="font-size:16px;">%</span></p>
+                            @else
+                                <p style="font-size:35px;"><b>{{$quest->body_fat_percentage_after}}</b><span style="font-size:16px;">%</span></p>
+                            @endif
+                        </div>
+                    </div>
+                </div>
                 <h4 class="under">{{$user->name}}</h4>
                 <h5>Lv.<span style="font-size:25px;">{{$quest->level}}</span></h5>
                 <div class="mx-auto" id="containerExp"></div>
@@ -613,6 +687,7 @@
      </div>
 </div>
 
+<!--HPバー-->
 <script>
     var nowHP = @json($nowHP);
     
@@ -634,6 +709,7 @@
     bar.animate(nowHP);
 </script>
 
+<!--MPバー-->
 <script>
     var nowMP = @json($nowMP);
     var bar = new ProgressBar.Line(containerMP2, {
@@ -654,6 +730,7 @@
     bar.animate(nowMP);
 </script>
 
+<!--expバー-->
 <script>
     var nowExp = @json($nowExp);
     var bar = new ProgressBar.Line(containerExp, {

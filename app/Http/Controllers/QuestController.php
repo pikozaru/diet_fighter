@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use App\Models\Record;
 use App\Models\ActionHistory;
@@ -16,7 +17,6 @@ use App\Models\Item;
 use App\Models\Skill;
 use App\Models\Ranking;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Auth;
 
 class QuestController extends Controller
 {
@@ -35,7 +35,6 @@ class QuestController extends Controller
     {
         $record = Record::where('user_id', Auth::id())->orderBy('created_at', 'desc')->first();
         $possessionItems = PossessionItem::where('user_id', Auth::id())->get();
-        $carbon = Carbon::now();
         $quest = Quest::where('user_id', Auth::id())->orderBy('created_at', 'desc')->first();
         $questEndAt = Quest::where('user_id', Auth::id())->orderBy('created_at', 'desc')->value('end_at');
         $questId = Quest::where('user_id', Auth::id())->orderBy('created_at', 'desc')->value('id');
@@ -43,11 +42,12 @@ class QuestController extends Controller
             $questItems = QuestItems::where('user_id', Auth::id())->get();
         }
         
+        //クエスト進行中の場合
         if($quest !== null) {
             return redirect()->route('quests.show', ['quest' => $questId]);
         }
         
-        //$recordで今日の日付かどうかを確認する。
+        //クエスト未登録の場合
         return view('quests.create', compact('record', 'possessionItems', 'questItems'));
     }
     
@@ -68,7 +68,10 @@ class QuestController extends Controller
         $quest->body_fat_percentage_before = $request->input('body_fat_percentage_before');
         $quest->weight_after = $request->input('weight_after');
         $quest->body_fat_percentage_after = $request->input('body_fat_percentage_after');
+        
+        //開始日時
         $quest->start_at = new Carbon('now');
+        //終了日時
         if($request->input('end_at') === "7") {
             $quest->end_at = $carbon->addweek(1);
             $quest->value = 7;
@@ -79,6 +82,8 @@ class QuestController extends Controller
             $quest->end_at = $carbon->addMonth(1);
             $quest->value = 30;
         }
+        
+        //プレイヤーの初期ステータス
         $quest->level = 1;
         $quest->action_point = $getActionPoint;
         $quest->max_hit_point = 100;
@@ -90,12 +95,14 @@ class QuestController extends Controller
         $quest->exp = 0;
         $quest->save();
         
+        //アイテムの持ち込み
         if($request->get('item')) {
             $items = $request->input('item');
             foreach($items as $item){
                 $questItem = new QuestItems;
                 $questItem->user_id = Auth::id();
                 $questItem->item_id = $item;
+                $questItem->quest_id = $quest->id;
                 $questItem->save();
                 
                 $possessionItem = PossessionItem::where('user_id', Auth::id())->where('item_id', $item)->first();
@@ -104,6 +111,7 @@ class QuestController extends Controller
             }
         }
         
+        //敵をを出現
         $enemydatabase = new EnemyDatabase();
         $enemydatabase->quest_id = $quest->id;
         $enemydatabase->enemy_id = 1;
@@ -126,7 +134,6 @@ class QuestController extends Controller
      */
     public function show(Request $request, Quest $quest)
     {
-        // 開催期間と残アクションポイント数の判定
         $user = Auth::user();
         $carbon = new Carbon('now');
         $possessionSkills = PossessionSkills::where('user_id', Auth::id())->orderBy('skill_id', 'asc')->get();
@@ -138,41 +145,49 @@ class QuestController extends Controller
         $nowExp = $quest->exp / self::calcurateRequiredLevel($quest->level);
         $subExp = self::calcurateRequiredLevel($quest->level) - $quest->exp;
         
+        //クエスト終了処理へ
+        // start_judge = 5 →クエスト終了
         if($quest->start_judge == 5) {
             return redirect()->route('quests.rankCount', $quest->id);
         }
 
-        // メイン画面を表示
+        // クエスト画面を表示
         return view('quests.show', compact('user', 'quest', 'carbon', 'possessionSkills', 'possessionSkillsEmpty', 'questItems', 'actionHistories', 'nowHP', 'nowMP', 'nowExp', 'subExp'));
     }
     
     
     public function command(Request $request, Quest $quest)
     {
+        //防御を選択
         if($request->get('defense')) {
             $user = Auth::user();
             $enemyDataBases = $quest->enemyDataBases;
+            
+            // start_judge = 0 →リセット
             $quest->start_judge = 0;
             
+            //メッセージの削除
             if(ActionHistory::where('quest_id', $quest->id)->get() !== null) {
                 ActionHistory::where('quest_id', $quest->id)->delete();
             }
             
+            //アクションポイントを減少
             $quest->action_point -= 2;
             
-            // プレイヤーのログ内容
+            // プレイヤーのログ内容（防御）
             $actionHistoryEnemy = new ActionHistory;
             $actionHistoryEnemy->quest_id = $quest->id;
             $actionHistoryEnemy->log = $user->name."は身を守った";
             $actionHistoryEnemy->save();
             
+            //敵全体の攻撃値
             $sumAttacked = 0;
             foreach ($enemyDataBases as $enemyDataBase) {
                 // 敵側の攻撃処理
                 if($enemyDataBase->frozen_count > 0) {
                     $enemyDataBase->frozen_count -= 1;
                     
-                    // 敵のログ内容
+                    // 敵のログ内容（氷結）
                     $actionHistoryEnemy = new ActionHistory;
                     $actionHistoryEnemy->quest_id = $quest->id;
                     $actionHistoryEnemy->log = $enemyDataBase->enemy->name."は凍り付いていて動けない";
@@ -196,7 +211,7 @@ class QuestController extends Controller
                     }
                     $enemyDataBase->now_hit_point -= $attackPoison;
                     
-                    // 敵のログ内容
+                    // 敵のログ内容（毒）
                     $actionHistoryEnemy = new ActionHistory;
                     $actionHistoryEnemy->quest_id = $quest->id;
                     $actionHistoryEnemy->log = $enemyDataBase->enemy->name."は毒で".$attackPoison."のダメージ";
@@ -209,45 +224,52 @@ class QuestController extends Controller
                 }
                 $enemyDataBase->save();
                 
-                // 死活判定
+                // 敵の死活判定
                 if ($enemyDataBase->now_hit_point <= 0) {
-                    // 倒したので、スコアアップ処理＋経験値＋倒した敵の数をカウント
-                    if($quest->score_up_count >= 1) {
-                            $quest->exp += $enemyDataBase->enemy->score;
-                            $quest->clear_exp += $enemyDataBase->enemy->score;
-                            $quest->clear_score += $enemyDataBase->enemy->score * 1.2;
-                            $quest->score += $enemyDataBase->enemy->score * 1.2;
-                            $user->clear_score += $enemyDataBase->enemy->score * 1.2;
-                            $user->clear_point += $enemyDataBase->enemy->score;
-                            $user->point += $enemyDataBase->enemy->score;
-                            $user->save();
-                        } elseif($quest->point_up_count >= 1) {
-                            $quest->exp += $enemyDataBase->enemy->score;
-                            $quest->clear_exp += $enemyDataBase->enemy->score;
-                            $quest->clear_score += $enemyDataBase->enemy->score;
-                            $quest->score += $enemyDataBase->enemy->score;
-                            $user->clear_score += $enemyDataBase->enemy->score;
-                            $user->clear_point += $enemyDataBase->enemy->score * 1.2;
-                            $user->point += $enemyDataBase->enemy->score * 1.2;
-                            $user->save();
-                        } else {
-                            $quest->exp += $enemyDataBase->enemy->score;
-                            $quest->clear_exp += $enemyDataBase->enemy->score;
-                            $quest->clear_score += $enemyDataBase->enemy->score;
-                            $quest->score += $enemyDataBase->enemy->score;
-                            $user->clear_score += $enemyDataBase->enemy->score;
-                            $user->clear_point += $enemyDataBase->enemy->score;
-                            $user->point += $enemyDataBase->enemy->score;
-                            $user->save();
-                        }
+                    //倒した敵からスコアを獲得
+                    //exp=クエストレベルの経験値
+                    //point=スキル習得、アイテム購入で使用
                     
+                    // スキル:スコアアップ使用中の場合
+                    if($quest->score_up_count >= 1) {
+                        $quest->exp += $enemyDataBase->enemy->score;
+                        $quest->clear_exp += $enemyDataBase->enemy->score;
+                        $quest->clear_score += $enemyDataBase->enemy->score * 1.2;
+                        $quest->score += $enemyDataBase->enemy->score * 1.2;
+                        $user->clear_score += $enemyDataBase->enemy->score * 1.2;
+                        $user->clear_point += $enemyDataBase->enemy->score;
+                        $user->point += $enemyDataBase->enemy->score;
+                        $user->save();
+                    } 
+                    // スキル:ポイントアップ使用中の場合
+                    elseif($quest->point_up_count >= 1) {
+                        $quest->exp += $enemyDataBase->enemy->score;
+                        $quest->clear_exp += $enemyDataBase->enemy->score;
+                        $quest->clear_score += $enemyDataBase->enemy->score;
+                        $quest->score += $enemyDataBase->enemy->score;
+                        $user->clear_score += $enemyDataBase->enemy->score;
+                        $user->clear_point += $enemyDataBase->enemy->score * 1.2;
+                        $user->point += $enemyDataBase->enemy->score * 1.2;
+                        $user->save();
+                    } else {
+                        $quest->exp += $enemyDataBase->enemy->score;
+                        $quest->clear_exp += $enemyDataBase->enemy->score;
+                        $quest->clear_score += $enemyDataBase->enemy->score;
+                        $quest->score += $enemyDataBase->enemy->score;
+                        $user->clear_score += $enemyDataBase->enemy->score;
+                        $user->clear_point += $enemyDataBase->enemy->score;
+                        $user->point += $enemyDataBase->enemy->score;
+                        $user->save();
+                    }
+                    
+                    //倒した敵の数をカウント
                     $quest->enemy_destorying_count += 1;
                 }
                 
                 $enemyDataBase->save();
             }
             
-            // 敵のログ内容
+            // 敵のログ内容（攻撃）
             $actionHistoryEnemy = new ActionHistory;
             $actionHistoryEnemy->quest_id = $quest->id;
             $actionHistoryEnemy->log = "敵の攻撃！\r\n".$user->name."に合わせて".$sumAttacked."のダメージ";
@@ -282,19 +304,21 @@ class QuestController extends Controller
                 return redirect()->route('quests.rankCount', $quest->id);
             }
             
-            // HPが0の敵をテーブルから削除する＋新しい敵を強くする
+            // HPが0の敵をテーブルから削除
             $quest->enemyDataBases()->where('now_hit_point', 0)->delete();
             
-            // レベルアップ判定
+            // レベルアップ＋ステータスアップ
             if(!$quest->enemyDataBases()->where('now_hit_point', '!=', 0)->exists() and $quest->exp >= self::calcurateRequiredLevel($quest->level)) {
                 $quest->last_time_level = $quest->level;
                 $levelUpCount = round($quest->exp / self::calcurateRequiredLevel($quest->level), 0) - $quest->level;
                 $quest->level += $levelUpCount;
                 $quest->attack_point += 3 * $levelUpCount;
                 $quest->defense_point += 1 * $levelUpCount;
+                //start_judge = 4 →レベルアップ
                 $quest->start_judge = 4;
             }
             
+            //start_judge = 2 →敵が全滅
             if(!$quest->enemyDataBases()->where('now_hit_point', '!=', 0)->exists() and $quest->start_judge != 4) {
                 $quest->start_judge = 2;
             }
@@ -302,34 +326,50 @@ class QuestController extends Controller
             $quest->save();
             
             return redirect()->route('quests.show', $quest->id);
-        } elseif($request->get('attack')) {
+        } 
+        
+        //攻撃を選択
+        elseif($request->get('attack')) {
             $enemyDataBases = $quest->enemyDataBases;
             $user = Auth::user();
+            
+            // start_judge = 0 →リセット
             $quest->start_judge = 0;
+            //メッセージの削除
             if(ActionHistory::where('quest_id', $quest->id)->get() !== null) {
                 ActionHistory::where('quest_id', $quest->id)->delete();
             }
             
+            //攻撃対象
             $targetEnemyDataBaseIds = $request->input("attack");
+            //敵全体の攻撃値
             $sumAttacked = 0;
             
             foreach ($enemyDataBases as $enemyDataBase) {
-                // 攻撃対象（ブラウザフォーム側でチェックされた）かどうかを確認する
+                // 攻撃対象（ブラウザフォーム側でチェックされた）かどうかを確認
                 if (in_array($enemyDataBase->id, (array)$targetEnemyDataBaseIds)) {
+                    
                     if($quest->train_count > 0) {
                         $train = Skill::where('name', "鍛える")->first();
+                        
+                        //プレイヤーの攻撃力アップ
                         $trainMultiple = $train->possessionSkill->magnification;
                     } elseif ($quest->train_count <= 0) {
                         $trainMultiple = 1;
                     }
                     
-                    // こちらの攻撃処理
+                    // プレイヤーの攻撃処理
                     $attacked = $trainMultiple * $quest->attack_point - $enemyDataBase->now_defense_point;
-                    if($attacked <= 0) {
+                    
+                    //最低でも1のダメージを与える
+                    if($attacked <= 1) {
                         $attacked = 1;
                     }
                     $enemyDataBase->now_hit_point -= $attacked;
+                    
+                    //アクションポイントの減少
                     $quest->action_point -= 5;
+                    //敵のHPが負の場合
                     if ($enemyDataBase->now_hit_point < 0) {
                         $enemyDataBase->now_hit_point = 0;
                     }
@@ -344,7 +384,7 @@ class QuestController extends Controller
                         }
                         $enemyDataBase->now_hit_point -= $attackPoison;
                         
-                        // 敵のログ内容
+                        // 敵のログ内容（毒）
                         $actionHistoryEnemy = new ActionHistory;
                         $actionHistoryEnemy->quest_id = $quest->id;
                         $actionHistoryEnemy->log = $enemyDataBase->enemy->name."は毒で".$attackPoison."のダメージ";
@@ -357,9 +397,13 @@ class QuestController extends Controller
                     }
                     $enemyDataBase->save();
                     
-                    // 死活判定
+                    // 敵の死活判定
                     if ($enemyDataBase->now_hit_point <= 0) {
-                        // 倒したので、スコアアップ処理＋経験値＋倒した敵の数をカウント
+                        //倒した敵からスコアを獲得
+                        //exp=クエストレベルの経験値
+                        //point=スキル習得、アイテム購入で使用
+                        
+                        // スキル:スコアアップ使用中の場合
                         if($quest->score_up_count >= 1) {
                             $quest->exp += $enemyDataBase->enemy->score;
                             $quest->clear_exp += $enemyDataBase->enemy->score;
@@ -369,7 +413,9 @@ class QuestController extends Controller
                             $user->clear_point += $enemyDataBase->enemy->score;
                             $user->point += $enemyDataBase->enemy->score;
                             $user->save();
-                        } elseif($quest->point_up_count >= 1) {
+                        } 
+                        // スキル:ポイントアップ使用中の場合
+                        elseif($quest->point_up_count >= 1) {
                             $quest->exp += $enemyDataBase->enemy->score;
                             $quest->clear_exp += $enemyDataBase->enemy->score;
                             $quest->clear_score += $enemyDataBase->enemy->score;
@@ -389,6 +435,7 @@ class QuestController extends Controller
                             $user->save();
                         }
                         
+                        // 倒した敵の数をカウント
                         $quest->enemy_destorying_count += 1;
                     }
                 }
@@ -397,7 +444,7 @@ class QuestController extends Controller
                 if($enemyDataBase->frozen_count > 0) {
                     $enemyDataBase->frozen_count -= 1;
                     
-                    // 敵のログ内容
+                    // 敵のログ内容（氷結）
                     $actionHistoryEnemy = new ActionHistory;
                     $actionHistoryEnemy->quest_id = $quest->id;
                     $actionHistoryEnemy->log = $enemyDataBase->enemy->name."は凍り付いていて動けない";
@@ -420,13 +467,13 @@ class QuestController extends Controller
                 }
             }
             
-            // プレイヤーのログ内容
+            // プレイヤーのログ内容（攻撃）
             $actionHistoryPlayer = new ActionHistory;
             $actionHistoryPlayer->quest_id = $quest->id;
             $actionHistoryPlayer->log = $user->name."の攻撃！\r\n".$enemyDataBase->enemy->name."に".$attacked."のダメージ";
             $actionHistoryPlayer->save();
             
-            // 敵のログ内容
+            // 敵のログ内容（攻撃）
             $actionHistoryEnemy = new ActionHistory;
             $actionHistoryEnemy->quest_id = $quest->id;
             $actionHistoryEnemy->log = "敵の攻撃！\r\n".$user->name."に合わせて".$sumAttacked."のダメージ";
@@ -452,18 +499,21 @@ class QuestController extends Controller
                 $quest->hi_potion_count -= 1;
             }
     
-            // HPが0の敵をテーブルから削除する＋新しい敵を強くする
+            // HPが0の敵をテーブルから削除
             $quest->enemyDataBases()->where('now_hit_point', 0)->delete();
             
             // レベルアップ判定
             if(!$quest->enemyDataBases()->where('now_hit_point', '!=', 0)->exists() and $quest->exp >= self::calcurateRequiredLevel($quest->level)) {
                 $quest->last_time_level = $quest->level;
-                $quest->level += self::calcurateExp($quest->exp);
-                $quest->attack_point += 3 * ($quest->level - $quest->last_time_level);
-                $quest->defense_point += 1 * ($quest->level - $quest->last_time_level);
+                $levelUpCount = round($quest->exp / self::calcurateRequiredLevel($quest->level), 0) - $quest->level;
+                $quest->level += $levelUpCount;
+                $quest->attack_point += 3 * $levelUpCount;
+                $quest->defense_point += 1 * $levelUpCount;
+                //start_judge = 4 →レベルアップ
                 $quest->start_judge = 4;
             }
             
+            //start_judge = 2 →敵が全滅
             if(!$quest->enemyDataBases()->where('now_hit_point', '!=', 0)->exists() and $quest->start_judge != 4) {
                 $quest->start_judge = 2;
             }
@@ -475,10 +525,14 @@ class QuestController extends Controller
             
         }
         
+        //アイテムを選択
         elseif($request->get('itemUse')) {
             $enemyDataBases = $quest->enemyDataBases;
             $user = Auth::user();
+            
+            // start_judge = 0 →リセット
             $quest->start_judge = 0;
+            //メッセージの削除
             if(ActionHistory::where('quest_id', $quest->id)->get() !== null) {
                 ActionHistory::where('quest_id', $quest->id)->delete();
             }
@@ -508,7 +562,7 @@ class QuestController extends Controller
                 $questItem->possession_number -= 1;
                 $questItem->save();
 
-                // プレイヤーのログ内容
+                // プレイヤーのログ内容（HP回復）
                 $actionHistoryPlayer = new ActionHistory;
                 $actionHistoryPlayer->quest_id = $quest->id;
                 $actionHistoryPlayer->log = $user->name."は回復薬を使った\r\n".$user->name."のHPが50回復した！";
@@ -519,7 +573,7 @@ class QuestController extends Controller
                 $questItem->possession_number -= 1;
                 $questItem->save();
                 
-                // プレイヤーのログ内容
+                // プレイヤーのログ内容（MP回復）
                 $actionHistoryPlayer = new ActionHistory;
                 $actionHistoryPlayer->quest_id = $quest->id;
                 $actionHistoryPlayer->log = $user->name."はポーションを使った\r\n".$user->name."のMPが50回復した！";
@@ -530,7 +584,7 @@ class QuestController extends Controller
                 $questItem->possession_number -= 1;
                 $questItem->save();
                 
-                // プレイヤーのログ内容
+                // プレイヤーのログ内容（スコアアップ）
                 $actionHistoryPlayer = new ActionHistory;
                 $actionHistoryPlayer->quest_id = $quest->id;
                 $actionHistoryPlayer->log = $user->name."はスコアUPを使った\r\n5ターンの間、獲得スコアがUP！";
@@ -541,7 +595,7 @@ class QuestController extends Controller
                 $questItem->possession_number -= 1;
                 $questItem->save();
                 
-                // プレイヤーのログ内容
+                // プレイヤーのログ内容（ポイントアップ）
                 $actionHistoryPlayer = new ActionHistory;
                 $actionHistoryPlayer->quest_id = $quest->id;
                 $actionHistoryPlayer->log = $user->name."はポイントUPを使った\r\n5ターンの間、獲得ポイントがUP！";
@@ -552,13 +606,14 @@ class QuestController extends Controller
                 $questItem->possession_number -= 1;
                 $questItem->save();
                 
-                // プレイヤーのログ内容
+                // プレイヤーのログ内容（MP∞）
                 $actionHistoryPlayer = new ActionHistory;
                 $actionHistoryPlayer->quest_id = $quest->id;
                 $actionHistoryPlayer->log = $user->name."はハイポーションを使った\r\n5ターンの間、MPを消費しなくなった！";
                 $actionHistoryPlayer->save();
             }
             
+            // 敵全体の攻撃値
             $sumAttacked = 0;
             
             foreach ($enemyDataBases as $enemyDataBase) {        
@@ -566,7 +621,7 @@ class QuestController extends Controller
                 if($enemyDataBase->frozen_count > 0) {
                     $enemyDataBase->frozen_count -= 1;
                     
-                    // 敵のログ内容
+                    // 敵のログ内容（氷結）
                     $actionHistoryEnemy = new ActionHistory;
                     $actionHistoryEnemy->quest_id = $quest->id;
                     $actionHistoryEnemy->log = $enemyDataBase->enemy->name."は凍り付いていて動けない";
@@ -583,7 +638,7 @@ class QuestController extends Controller
                     $attackPoison = $quest->attack_point * $poison->possessionSkill->magnification - round($enemyDataBase->now_defense_point / 3, 0);
                     $enemyDataBase->now_hit_point -= $attackPoison;
                     
-                    // 敵のログ内容
+                    // 敵のログ内容（毒）
                     $actionHistoryEnemy = new ActionHistory;
                     $actionHistoryEnemy->quest_id = $quest->id;
                     $actionHistoryEnemy->log = $enemyDataBase->enemy->name."は毒で".$attackPoison."のダメージ";
@@ -598,36 +653,43 @@ class QuestController extends Controller
                
                 // 死活判定
                 if ($enemyDataBase->now_hit_point <= 0) {
-                    // 倒したので、スコアアップ処理＋経験値＋倒した敵の数をカウント
-                    if($quest->score_up_count >= 1) {
-                            $quest->exp += $enemyDataBase->enemy->score;
-                            $quest->clear_exp += $enemyDataBase->enemy->score;
-                            $quest->clear_score += $enemyDataBase->enemy->score * 1.2;
-                            $quest->score += $enemyDataBase->enemy->score * 1.2;
-                            $user->clear_score += $enemyDataBase->enemy->score * 1.2;
-                            $user->clear_point += $enemyDataBase->enemy->score;
-                            $user->point += $enemyDataBase->enemy->score;
-                            $user->save();
-                        } elseif($quest->point_up_count >= 1) {
-                            $quest->exp += $enemyDataBase->enemy->score;
-                            $quest->clear_exp += $enemyDataBase->enemy->score;
-                            $quest->clear_score += $enemyDataBase->enemy->score;
-                            $quest->score += $enemyDataBase->enemy->score;
-                            $user->clear_score += $enemyDataBase->enemy->score;
-                            $user->clear_point += $enemyDataBase->enemy->score * 1.2;
-                            $user->point += $enemyDataBase->enemy->score * 1.2;
-                            $user->save();
-                        } else {
-                            $quest->exp += $enemyDataBase->enemy->score;
-                            $quest->clear_exp += $enemyDataBase->enemy->score;
-                            $quest->clear_score += $enemyDataBase->enemy->score;
-                            $quest->score += $enemyDataBase->enemy->score;
-                            $user->clear_score += $enemyDataBase->enemy->score;
-                            $user->clear_point += $enemyDataBase->enemy->score;
-                            $user->point += $enemyDataBase->enemy->score;
-                            $user->save();
-                        }
+                    //倒した敵からスコアを獲得
+                    //exp=クエストレベルの経験値
+                    //point=スキル習得、アイテム購入で使用
                     
+                    // スキル:スコアアップ使用中の場合
+                    if($quest->score_up_count >= 1) {
+                        $quest->exp += $enemyDataBase->enemy->score;
+                        $quest->clear_exp += $enemyDataBase->enemy->score;
+                        $quest->clear_score += $enemyDataBase->enemy->score * 1.2;
+                        $quest->score += $enemyDataBase->enemy->score * 1.2;
+                        $user->clear_score += $enemyDataBase->enemy->score * 1.2;
+                        $user->clear_point += $enemyDataBase->enemy->score;
+                        $user->point += $enemyDataBase->enemy->score;
+                        $user->save();
+                    } 
+                    // スキル:ポイントアップ使用中の場合
+                    elseif($quest->point_up_count >= 1) {
+                        $quest->exp += $enemyDataBase->enemy->score;
+                        $quest->clear_exp += $enemyDataBase->enemy->score;
+                        $quest->clear_score += $enemyDataBase->enemy->score;
+                        $quest->score += $enemyDataBase->enemy->score;
+                        $user->clear_score += $enemyDataBase->enemy->score;
+                        $user->clear_point += $enemyDataBase->enemy->score * 1.2;
+                        $user->point += $enemyDataBase->enemy->score * 1.2;
+                        $user->save();
+                    } else {
+                        $quest->exp += $enemyDataBase->enemy->score;
+                        $quest->clear_exp += $enemyDataBase->enemy->score;
+                        $quest->clear_score += $enemyDataBase->enemy->score;
+                        $quest->score += $enemyDataBase->enemy->score;
+                        $user->clear_score += $enemyDataBase->enemy->score;
+                        $user->clear_point += $enemyDataBase->enemy->score;
+                        $user->point += $enemyDataBase->enemy->score;
+                        $user->save();
+                    }
+                    
+                    // 倒した敵の数をカウント
                     $quest->enemy_destorying_count += 1;
                 }
                 
@@ -654,7 +716,7 @@ class QuestController extends Controller
                 $quest->train_count -= 1;
             }
             
-            // HPが0の敵をテーブルから削除する＋新しい敵を強くする
+            // HPが0の敵をテーブルから削除する
             $quest->enemyDataBases()->where('now_hit_point', 0)->delete();
             
             // レベルアップ判定
@@ -664,9 +726,11 @@ class QuestController extends Controller
                 $quest->level += $levelUpCount;
                 $quest->attack_point += 3 * $levelUpCount;
                 $quest->defense_point += 1 * $levelUpCount;
+                //start_judge = 4 →レベルアップ
                 $quest->start_judge = 4;
             }
             
+            //start_judge = 2 →敵が全滅
             if(!$quest->enemyDataBases()->where('now_hit_point', '!=', 0)->exists() and $quest->start_judge != 4) {
                 $quest->start_judge = 2;
             }
@@ -678,10 +742,13 @@ class QuestController extends Controller
             
         }
         
-        // スキル処理
+        // スキルを選択
         elseif($request->input('enemyDataBases') or $request->input('selectSkill')) {
             $enemyDataBases = $quest->enemyDataBases;
             $user = Auth::user();
+            
+            // start_judge = 0 →リセット
+            //メッセージの削除
             $quest->start_judge = 0;
             if(ActionHistory::where('quest_id', $quest->id)->get() !== null) {
                 ActionHistory::where('quest_id', $quest->id)->delete();
@@ -711,7 +778,7 @@ class QuestController extends Controller
                 }
                 $quest->save();
                 
-                // プレイヤーのログ内容
+                // プレイヤーのログ内容（ヒール）
                 $actionHistoryPlayer = new ActionHistory;
                 $actionHistoryPlayer->quest_id = $quest->id;
                 $actionHistoryPlayer->log = $user->name."はヒールを唱えた！\r\n".$user->name."のHPが回復した";
@@ -722,7 +789,7 @@ class QuestController extends Controller
                 $quest->train_count = 5;
                 $quest->save();
                 
-                // プレイヤーのログ内容
+                // プレイヤーのログ内容（鍛える）
                 $actionHistoryPlayer = new ActionHistory;
                 $actionHistoryPlayer->quest_id = $quest->id;
                 $actionHistoryPlayer->log = $user->name."はとにかく鍛えた\r\nおかげで攻撃力が上がった！";
@@ -755,7 +822,7 @@ class QuestController extends Controller
                         }
                         $enemyDataBase->save();
                         
-                        // プレイヤーのログ内容
+                        // プレイヤーのログ内容（ファイア）
                         $actionHistoryPlayer = new ActionHistory;
                         $actionHistoryPlayer->quest_id = $quest->id;
                         $actionHistoryPlayer->log = $user->name."はファイアを唱えた！\r\n".$enemyDataBase->enemy->name."に".$attackFire."のダメージ";
@@ -776,7 +843,7 @@ class QuestController extends Controller
                         $enemyDataBase->frozen_count = 4;
                         $enemyDataBase->save();
                         
-                        // プレイヤーのログ内容
+                        // プレイヤーのログ内容（アイス）
                         $actionHistoryPlayer = new ActionHistory;
                         $actionHistoryPlayer->quest_id = $quest->id;
                         $actionHistoryPlayer->log = $user->name."はアイスを唱えた！\r\n".$enemyDataBase->enemy->name."に".$attackIce."のダメージ\r\n".$enemyDataBase->enemy->name."は凍結した";
@@ -792,7 +859,7 @@ class QuestController extends Controller
                         $enemyDataBase->poison_count = 6;
                         $enemyDataBase->save();
                         
-                        // プレイヤーのログ内容
+                        // プレイヤーのログ内容（ポイズン）
                         $actionHistoryPlayer = new ActionHistory;
                         $actionHistoryPlayer->quest_id = $quest->id;
                         $actionHistoryPlayer->log = $user->name."はポイズンを唱えた！\r\n".$enemyDataBase->enemy->name."は毒状態になった";
@@ -804,7 +871,7 @@ class QuestController extends Controller
                         $quest->action_point -= $penetrationAttack->required_action_points;
                         $enemyDataBase->save();
                         
-                        // プレイヤーのログ内容
+                        // プレイヤーのログ内容（貫通攻撃）
                         $actionHistoryPlayer = new ActionHistory;
                         $actionHistoryPlayer->quest_id = $quest->id;
                         $actionHistoryPlayer->log = $user->name."の貫通攻撃！\r\n".$enemyDataBase->enemy->name."に".$attackPenetration."のダメージ";
@@ -821,7 +888,11 @@ class QuestController extends Controller
                     
                     // 死活判定
                     if ($enemyDataBase->now_hit_point <= 0) {
-                        // 倒したので、スコアアップ処理＋経験値＋倒した敵の数をカウント
+                        //倒した敵からスコアを獲得
+                        //exp=クエストレベルの経験値
+                        //point=スキル習得、アイテム購入で使用
+                        
+                        // スキル:スコアアップ使用中の場合
                         if($quest->score_up_count >= 1) {
                             $quest->exp += $enemyDataBase->enemy->score;
                             $quest->clear_exp += $enemyDataBase->enemy->score;
@@ -831,7 +902,9 @@ class QuestController extends Controller
                             $user->clear_point += $enemyDataBase->enemy->score;
                             $user->point += $enemyDataBase->enemy->score;
                             $user->save();
-                        } elseif($quest->point_up_count >= 1) {
+                        } 
+                        // スキル:ポイントアップ使用中の場合
+                        elseif($quest->point_up_count >= 1) {
                             $quest->exp += $enemyDataBase->enemy->score;
                             $quest->clear_exp += $enemyDataBase->enemy->score;
                             $quest->clear_score += $enemyDataBase->enemy->score;
@@ -851,6 +924,7 @@ class QuestController extends Controller
                             $user->save();
                         }
                         
+                        // 倒した敵の数をカウント
                         $quest->enemy_destorying_count += 1;
                     }
                 }
@@ -859,7 +933,7 @@ class QuestController extends Controller
                 if($enemyDataBase->frozen_count > 0) {
                     $enemyDataBase->frozen_count -= 1;
                     
-                    // 敵のログ内容
+                    // 敵のログ内容（氷結）
                     $actionHistoryEnemy = new ActionHistory;
                     $actionHistoryEnemy->quest_id = $quest->id;
                     $actionHistoryEnemy->log = $enemyDataBase->enemy->name."は凍り付いていて動けない";
@@ -897,7 +971,7 @@ class QuestController extends Controller
                 }
             }
             
-            // 敵のログ内容
+            // 敵のログ内容（攻撃）
             $actionHistoryEnemy = new ActionHistory;
             $actionHistoryEnemy->quest_id = $quest->id;
             $actionHistoryEnemy->log = "敵の攻撃！\r\n".$user->name."に合わせて".$sumAttacked."のダメージ";
@@ -918,7 +992,7 @@ class QuestController extends Controller
                 $quest->hi_potion_count -= 1;
             }
     
-            // HPが0の敵をテーブルから削除する＋新しい敵を強くする
+            // HPが0の敵をテーブルから削除する
             $quest->enemyDataBases()->where('now_hit_point', 0)->delete();
             
             // レベルアップ判定
@@ -928,9 +1002,11 @@ class QuestController extends Controller
                 $quest->level += $levelUpCount;
                 $quest->attack_point += 3 * $levelUpCount;
                 $quest->defense_point += 1 * $levelUpCount;
+                //start_judge = 4 →レベルアップ
                 $quest->start_judge = 4;
             }
             
+            //start_judge = 2 →敵が全滅
             if(!$quest->enemyDataBases()->where('now_hit_point', '!=', 0)->exists() and $quest->start_judge != 4) {
                 $quest->start_judge = 2;
             }
@@ -939,13 +1015,16 @@ class QuestController extends Controller
     
             // メイン画面に戻る        
             return redirect()->route('quests.show', $quest->id);
-            
+        
+        //敵が全滅したとき    
         } elseif($request->get('nextQuest')) {
             if (!$quest->enemyDataBases()->where('now_hit_point', '!=', 0)->exists()) {
+                // プレイヤーのレベルごとに敵のステータスを強化
                 if($quest->level % 10 == 0) {    
                     $quest->enemy_annihilation_count += 1.4;
                 }
                 
+                // 各レベルに達した場合の出現するボス
                 for($i = 1 ; $i < mt_rand(2, 3) ; $i++) {
                     $addEnemyDataBase = new EnemyDatabase();
                     $addEnemyDataBase->quest_id = $quest->id;
@@ -962,9 +1041,13 @@ class QuestController extends Controller
                         $addEnemyDataBase->enemy_id = 16;
                         $quest->boss_count += 1;
                     } else {
+                        
+                        // ボス以外の敵を追加
                         $addEnemyDataBase->enemy_id = Enemies::pop_probability($quest->level);
                     }
                     $addEnemyDataBase->save();
+                    
+                    // 敵のステータスを追加
                     $addEnemyDataBase->now_hit_point = floor($addEnemyDataBase->enemy->hit_point * $quest->enemy_annihilation_count);
                     $addEnemyDataBase->now_max_hit_point = floor($addEnemyDataBase->enemy->max_hit_point * $quest->enemy_annihilation_count);
                     $addEnemyDataBase->now_magical_point = floor($addEnemyDataBase->enemy->magical_point * $quest->enemy_annihilation_count);
@@ -973,17 +1056,22 @@ class QuestController extends Controller
                     $addEnemyDataBase->save();
                 }
                 
+                // ボスを一体のみにする
                 if(EnemyDatabase::whereBetween('enemy_id', [13, 16])->get()->count() >= 2) {
                     $deleteBoss = EnemyDatabase::where('quest_id', $quest->id)->first();
                     $deleteBoss->delete();
                 }
             }
+            
+            // start_judge = 1 →最初のクエスト画面
             $quest->start_judge = 1;
+            // 前回取得した経験値、スコアをリセット
             $quest->clear_exp = 0;
             $quest->clear_score = 0;
             $quest->save();
             
             $user = Auth::user();
+            // 前回取得した経験値、スコアをリセット
             $user->clear_point = 0;
             $user->save();
             
@@ -997,6 +1085,7 @@ class QuestController extends Controller
     {
         $user = Auth::user();
         
+        //クエストでのスコアを加算
         $user->total_score += $user->clear_score;
         
         // ランクアップ判定
@@ -1008,12 +1097,15 @@ class QuestController extends Controller
         $user->save();
         
         if($quest->hit_point <= 0) {
+            //プレイヤーが負けた場合
             return redirect()->route('quests.resultLose', $quest->id);
         } else {
+            //クエストが終了した場合
             return redirect()->route('quests.result', $quest->id);
         }
     }
     
+    //クエスト終了
     public function result(Request $request, Quest $quest)
     {
         $user = Auth::user();
@@ -1021,6 +1113,7 @@ class QuestController extends Controller
         $rankUpJudge = $user->total_score - self::calcurateRequiredRank($user->rank);
         $nowRanking = Ranking::where('user_id', Auth::id())->first();
         
+        //スコアの更新
         if($quest->score > $nowRanking->score) {
             Ranking::where('user_id', Auth::id())->delete();
             $ranking = new Ranking;
@@ -1034,18 +1127,20 @@ class QuestController extends Controller
             $ranking->save();
         }
         
+        // start_judge = 5 →クエスト終了
         $quest->start_judge = 5;
         $quest->save();
         
         return view('quests.result', compact('quest', 'carbon', 'user', 'rankUpJudge'));
     }
     
-    
+    //クエスト失敗
     public function resultLose(Request $request, Quest $quest)
     {
         $user = Auth::user();
         $rankUpJudge = $user->total_score - self::calcurateRequiredRank($user->rank);
         
+        // start_judge = 5 →クエスト終了
         $quest->start_judge = 5;
         $quest->save();
         
@@ -1058,20 +1153,23 @@ class QuestController extends Controller
         $user = Auth::user();
         $quest = Quest::where('user_id', Auth::id())->orderBy('created_at', 'desc')->first();
         
+        //スコアをリセット
         $user->clear_score = 0;
         $user->save();
         
+        //出現中の敵を削除
         $quest->enemyDataBases()->delete();
+        //終了したクエストを削除
         $quest->delete();
+        //未使用のアイテムを削除
         $user->questitems()->delete();
         
         return redirect()->route('quests.create');
     }
     
     
-    /**
-     * 現在のレベルを引数で指定して、次のレベルアップに必要なトータルscoreを算出する
-     */
+    //次のレベルアップに必要なexpを算出
+     
     private static function calcurateRequiredLevel($level)
     {
         $level_up_point = 100;
@@ -1085,25 +1183,7 @@ class QuestController extends Controller
         return floor($score);
     }
     
-    private static function calcurateExp($exp)
-    {
-        $level_up_exp = 100;
-        $rate = 1.1;
-        $level_up = 0;
-        
-        for ($i = 0; $i < 1000; $i++) {
-            $requiredExp = round($level_up_exp * ($rate ** ($i)), 0);
-            $exp -= $requiredExp;
-            $level_up += 1;
-            if($exp < 0) {
-                $level_up -= 1;
-                break;
-            }
-        }
-
-        return floor($level_up);
-    }
-    
+    //次のレベルアップに必要なトータルscoreを算出する
     private static function calcurateRequiredRank($rank)
     {
         $rankUpPoint = 500;
@@ -1117,22 +1197,4 @@ class QuestController extends Controller
         return floor($scoreToExp);
     }
     
-    private static function calcurateRankExp($exp)
-    {
-        $rank_up_exp = 500;
-        $rate = 1.2;
-        $rank_up = 0;
-        
-        for ($i = 0; $i < 1000; $i++) {
-            $requiredExp = round($rank_up_exp * ($rate ** ($i)), 0);
-            $exp -= $requiredExp;
-            $rank_up += 1;
-            if($exp < 0) {
-                $rank_up -= 1;
-                break;
-            }
-        }
-
-        return floor($rank_up);
-    }
 }

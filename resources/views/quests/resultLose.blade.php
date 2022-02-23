@@ -9,8 +9,11 @@
         <button class="diet-button diet-button-enter w-50 mt-3 mb-2" type="submit" name="lose">終了</button>
     </div>
 </form>
+
+<!--リザルト-->
 <div class="card card-body shadow-sm mt-2 mb-2"> 
     <h3 class="mx-auto text-center under mb-4">リザルト</h3>
+    <!--ランクアップ処理-->
     @if($rankUpJudge >= 0)    
         <div class="container">
             <div class="text-center">    

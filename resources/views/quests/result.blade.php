@@ -1,8 +1,11 @@
 @extends('layouts.quest_preparation_app')
 
 @section('quest_preparation_content')
+
+<!--クエスト期間中の場合-->
 @if($carbon->format('Y-m-d h:i') < $quest->end_at->format('Y-m-d h:i'))
     <h5 class="text-center">※クエスト中です。</h5>
+<!--クエスト終了の場合-->
 @else
     <h4 class="text-center">期間が終了しました！<br>お疲れ様です！</h4>
     
@@ -13,8 +16,10 @@
             <button class="diet-button diet-button-enter w-50 mt-3 mb-2" type="submit" name="finish">終了</button>
         </div>
     
+        <!--リザルト-->
         <div class="card card-body shadow-sm mt-2 mb-2">
             <h3 class="mx-auto text-center under mb-4">リザルト</h3>
+            <!--ランクアップ処理-->
             @if($rankUpJudge >= 0)    
                 <div class="container">
                     <div class="text-center">    
