@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 
 class RecordController extends Controller
 {
+    // フィルター解除処理
     public function latest()
     {
         $user = Auth::user();
@@ -23,6 +24,7 @@ class RecordController extends Controller
     }
     
     
+    // 記録一覧
     public function index()
     {
         $user = Auth::user();
@@ -86,6 +88,7 @@ class RecordController extends Controller
     }
     
     
+    // その日の記録
     public function show(Record $record)
     {
         $user = Auth::user();

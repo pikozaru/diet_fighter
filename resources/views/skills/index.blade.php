@@ -4,6 +4,7 @@
 <div class="ml-3 mr-3 mt-4">
     <h2 class="mx-auto text-center under mb-5" style="width:10em">スキル一覧</h2>
     
+    <!--各スキルを表示-->
     @foreach($possessionSkills as $possessionSkill)
         <div class="card card-body mb-1 shadow-sm">
         <div class="text-right">

@@ -8,6 +8,7 @@
         <p style="margin:0;"><b>所持ポイント：{{$user->point}}</b></p>
     </div>
     
+    <!--アイテム一覧-->
     @foreach($possessionItems as $possessionItem)
         <div class="card card-body mb-1 shadow-sm">
             <div class="text-center">
@@ -31,7 +32,7 @@
                     </button>
                 </div>    
                     
-                <!-- モーダル -->
+                <!--モーダル（アイテム購入）-->
                 <div class="modal fade" id="modal{{$possessionItem->item->id}}" tabindex="-1" role="dialog" aria-labelledby="label1" aria-hidden="true">
                     <div class="modal-dialog modal-dialog-centered" role="document">
                         <div class="modal-content">
@@ -45,6 +46,8 @@
                                         <div class="text-center">
                                             <h5 class="list-arrow-sub">所持数：{{$possessionItem->possession_number}}/ {{$possessionItem->item->max_possession_number}}</h5>
                                         </div>
+                                        
+                                        <!--増減カウンター-->
                                         <div class="field justify-content-center">
                                             <button type="button" class="count-button" id="down{{$possessionItem->item->id}}"><i class="fas fa-minus position-relative" style="bottom:0.6px;"></i></button>
                                             <input type="text" name="count" value="1" class="count-text" id="textbox{{$possessionItem->item->id}}" readonly>
@@ -69,6 +72,7 @@
     @endforeach
 </div>
 
+<!--増減カウンター（回復薬）-->
 <script>
     (() => {
     //HTMLのid値を使って以下のDOM要素を取得
@@ -119,6 +123,7 @@
     })();
 </script>
 
+<!--増減カウンター（ポーション）-->
 <script>
     (() => {
     //HTMLのid値を使って以下のDOM要素を取得
@@ -169,6 +174,7 @@
     })();
 </script>
 
+<!--増減カウンター（スコアアップ）-->
 <script>
     (() => {
     //HTMLのid値を使って以下のDOM要素を取得
@@ -219,6 +225,7 @@
     })();
 </script>
 
+<!--増減カウンター（ポイントアップ）-->
 <script>
     (() => {
     //HTMLのid値を使って以下のDOM要素を取得
@@ -269,6 +276,7 @@
     })();
 </script>
 
+<!--増減カウンター（ハイポーション）-->
 <script>
     (() => {
     //HTMLのid値を使って以下のDOM要素を取得

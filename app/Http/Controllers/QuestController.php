@@ -60,6 +60,12 @@ class QuestController extends Controller
      */
     public function store(Record $record, Request $request)
     {
+        $questRecently = Quest::where('user_id', Auth::id())->orderBy('created_at', 'desc')->first();
+        $questId = Quest::where('user_id', Auth::id())->orderBy('id', 'desc')->value('id');
+        if($questRecently !== null) {
+            return redirect()->route('quests.show', ['quest' => $questId]);
+        }
+        
         $getActionPoint = Record::where('user_id', Auth::id())->value('get_action_point');
         $carbon = new Carbon('now');
         $quest = new Quest();
@@ -1087,6 +1093,9 @@ class QuestController extends Controller
         
         //クエストでのスコアを加算
         $user->total_score += $user->clear_score;
+        //スコアをリセット
+        $user->clear_score = 0;
+        $user->save();
         
         // ランクアップ判定
         if($user->total_score >= self::calcurateRequiredRank($user->rank)) {
@@ -1152,10 +1161,6 @@ class QuestController extends Controller
     {
         $user = Auth::user();
         $quest = Quest::where('user_id', Auth::id())->orderBy('created_at', 'desc')->first();
-        
-        //スコアをリセット
-        $user->clear_score = 0;
-        $user->save();
         
         //出現中の敵を削除
         $quest->enemyDataBases()->delete();

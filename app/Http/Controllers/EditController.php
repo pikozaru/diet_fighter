@@ -25,6 +25,7 @@ class EditController extends Controller
      */
     public function nameEdit()
     {
+        // 名前の変更
         $user = Auth::user();
         
         return view('edits.name', compact('user'));
@@ -33,6 +34,7 @@ class EditController extends Controller
 
     public function nameUpdate(Request $request)
     {
+        // 名前の変更を適用
         $user = Auth::user();
         $user->name = $request->input('name');
         $user->save();
@@ -43,6 +45,7 @@ class EditController extends Controller
     
     public function emailEdit()
     {
+        // メールアドレスの変更
         $user = Auth::user();
         
         return view('edits.email', compact('user'));
@@ -51,6 +54,7 @@ class EditController extends Controller
     
     public function emailUpdate(Request $request)
     {
+        // メールアドレスの変更の適用
         $user = Auth::user();
         $user->email = $request->input('email');
         $user->save();
@@ -61,6 +65,7 @@ class EditController extends Controller
     
     public function heightEdit()
     {
+        // 身長の変更
         $user = Auth::user();
         
         return view('edits.height', compact('user'));
@@ -69,6 +74,7 @@ class EditController extends Controller
     
     public function heightUpdate(Request $request)
     {
+        // 身長の変更の適用
         $user = Auth::user();
         $user->height = $request->input('height');
         $user->save();

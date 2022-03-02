@@ -14,6 +14,7 @@
                 <div class="col-8 text-left">
                     <p style="font-size:clamp(15px, 5vw, 18px);">{{$user->name}}</p>
                 </div>
+                <!--名前変更画面へ-->
                 <div class="col-4 text-right">    
                     <a href="{{ route('edits.name') }}">
                         <i class="fas fa-edit"></i>
@@ -30,6 +31,7 @@
                 <div class="col-8 text-left">
                     <p style="font-size:clamp(15px, 5vw, 18px);">{{$user->email}}</p>
                 </div>
+                <!--メールアドレス変更画面へ-->
                 <div class="col-4 text-right">    
                     <a href="{{ route('edits.email') }}">
                         <i class="fas fa-edit"></i>
@@ -46,6 +48,7 @@
                 <div class="col-8 text-left">
                     <p style="font-size:clamp(15px, 5vw, 18px);">{{$user->height}}</p>
                 </div>
+                <!--身長変更画面へ-->
                 <div class="col-4 text-right">    
                     <a href="{{ route('edits.height') }}">
                         <i class="fas fa-edit"></i>

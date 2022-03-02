@@ -29,6 +29,7 @@ class HomeController extends Controller
     {
         $possessionItems = PossessionItem::where('user_id', Auth::id())->count();
         
+        // 登録完了画面orホーム画面に移動
         if($possessionItems != 0) {
             return redirect()->route('mains.index');
         } else {
@@ -38,6 +39,7 @@ class HomeController extends Controller
     
     public function store(Request $request)
     {
+        // 所持できるアイテムを登録時に追加
         $items = Item::all();
         
         foreach($items as $item) {

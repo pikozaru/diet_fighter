@@ -16,6 +16,7 @@ class ItemController extends Controller
      */
     public function index()
     {
+        // 所持アイテムの一覧
         $items = Item::all();
         $possessionItems = PossessionItem::where('user_id', Auth::id())->orderBy('id', 'asc')->get();//where('user_id', Auth::id());
         return view('items.index', compact('items', 'possessionItems'));
@@ -29,6 +30,7 @@ class ItemController extends Controller
 
     public function create()
     {
+        // 購入アイテムを選択
         $possessionItems = PossessionItem::where('user_id', Auth::id())->orderBy('id', 'asc')->get();
         
         $possessionItemHP = PossessionItem::where('user_id', Auth::id())->where('item_id', 1)->first();
@@ -37,6 +39,7 @@ class ItemController extends Controller
         $possessionItemPointUp = PossessionItem::where('user_id', Auth::id())->where('item_id', 4)->first();
         $possessionItemHiMP = PossessionItem::where('user_id', Auth::id())->where('item_id', 5)->first();
         
+        // アイテム最大所持数を取得
         $pointLimitHP = $possessionItemHP->item->max_possession_number - $possessionItemHP->possession_number;
         $pointLimitMP = $possessionItemMP->item->max_possession_number - $possessionItemMP->possession_number;
         $pointLimitScoreUp = $possessionItemScoreUp->item->max_possession_number - $possessionItemScoreUp->possession_number;
@@ -58,6 +61,7 @@ class ItemController extends Controller
      
     public function store(Request $request)
     {
+        // アイテム購入処理
         $possessionItem = PossessionItem::where('user_id', Auth::id())->where('item_id', $request->input('clearing'))->first();
         $possessionItem->possession_number += $request->input('count');
         $possessionItem->save();
@@ -68,40 +72,5 @@ class ItemController extends Controller
         
         return redirect()->route('items.create');
     }
-
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
 
 }

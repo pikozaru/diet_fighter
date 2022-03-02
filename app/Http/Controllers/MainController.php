@@ -21,9 +21,11 @@ class MainController extends Controller
     
     public function index(Request $request, Record $record)
     {
+        // ホーム画面
         $possessionItems = PossessionItem::where('user_id', Auth::id())->count();
         $items = Item::all();
         
+        // 登録時に所持できるアイテムを追加出来なかった場合
         if($possessionItems == 0) {
             foreach($items as $item) {
                 $addPossessionItemDataBase = new PossessionItem();
@@ -35,8 +37,10 @@ class MainController extends Controller
         
         $user = Auth::user();
         $record = Record::where('user_id', Auth::id())->orderBy('created_at', 'desc')->first();
+        // 前日の記録
         $recordLastTime = Record::where('user_id', Auth::id())->orderBy('created_at', 'desc')->skip(1)->first();
         
+        // 記録が初めての場合
         if($recordLastTime == null) {
             $weightSub = "--";
             $bodyFatPercentageSub = "--";
@@ -48,17 +52,20 @@ class MainController extends Controller
         }
         
         $recordRecently = null;
-        $quest = Quest::where('user_id', Auth::id())->orderBy('id', 'desc')->first();
         if($record !== null) {
             $recordRecently = Record::where('user_id', Auth::id())->orderBy('id', 'desc')->value('post_at')->format('Y/m/d');
         }
         
-        $carbon = Carbon::now();
+        // 現在の日本時間
         $carbonJapaneseNotation = Carbon::now()->format('Y/m/d');
-        $nextrank = self::calcurateRank($user->rank);
         
-        $exp = $user->total_score / $nextrank;
+        // ランクと経験値を取得
+        $nextrank = self::calcurateRequiredRank($user->rank);
+        $rankExp = $user->total_score / $nextrank;
         $requiredExp = $nextrank - $user->total_score;
+        
+        // 進行中のクエスト情報を取得
+        $quest = Quest::where('user_id', Auth::id())->orderBy('id', 'desc')->first();
         $nowHP = 0;
         $nowMP = 0;
         if($quest !== null) {
@@ -66,8 +73,16 @@ class MainController extends Controller
             $nowMP = $quest->magical_point / $quest->max_magical_point;
         }
         
-        $weekRecords = Record::whereDate('created_at', '>', now()->subWeek())->latest()->get();
-        $monthRecords = Record::whereDate('created_at', '>', now()->subMonth())->latest()->get();
+        $levelExp = 0;
+        $subExp = 0;
+        if($quest !== null) {
+            $levelExp = $quest->exp / self::calcurateRequiredLevel($quest->level);
+            $subExp = self::calcurateRequiredLevel($quest->level) - $quest->exp;
+        }
+        
+        // 一週間、一ヶ月間の情報を取得
+        $weekRecords = Record::where('user_id', Auth::id())->whereDate('created_at', '>', now()->subWeek())->latest()->get();
+        $monthRecords = Record::where('user_id', Auth::id())->whereDate('created_at', '>', now()->subMonth())->latest()->get();
         $postAt = [];
         $weight = [];
         $mPostAt = [];
@@ -83,14 +98,7 @@ class MainController extends Controller
             $mWeight[] = $monthRecord->weight;
         }
         
-        $nowExp = 0;
-        $subExp = 0;
-        if($quest !== null) {
-            $nowExp = $quest->exp / self::calcurateRequiredLevel($quest->level);
-            $subExp = self::calcurateRequiredLevel($quest->level) - $quest->exp;
-        }
-        
-        return view('mains.index', compact('record', 'recordLastTime', 'weightSub', 'bodyFatPercentageSub', 'bmiSub', 'recordRecently', 'quest', 'user', 'carbon', 'carbonJapaneseNotation', 'exp', 'requiredExp', 'nowHP', 'nowMP', 'postAt', 'weight', 'mPostAt', 'mWeight', 'nowExp', 'subExp'));
+        return view('mains.index', compact('record', 'recordLastTime', 'weightSub', 'bodyFatPercentageSub', 'bmiSub', 'recordRecently', 'quest', 'user', 'carbonJapaneseNotation', 'rankExp', 'requiredExp', 'nowHP', 'nowMP', 'postAt', 'weight', 'mPostAt', 'mWeight', 'levelExp', 'subExp'));
     }
     
     
@@ -102,14 +110,16 @@ class MainController extends Controller
      */
     public function store(Request $request)
     {
+        // 1日2回以上の記録が残らないようにする
         $user = Auth::user();
         $recordRecently = Record::where('user_id', Auth::id())->orderBy('id', 'desc')->value('post_at');
         $carbonJapaneseNotation = Carbon::now();
         $recordId = Record::where('user_id', Auth::id())->orderBy('id', 'desc')->value('id');
-        if($recordRecently === $carbonJapaneseNotation) {
+        if($recordRecently !== null and $recordRecently->format('n/d') === $carbonJapaneseNotation->format('n/d')) {
             return redirect()->route('mains.index', ['main' => $recordId]);
         }
         
+        // 入力された記録を保存
         $record = new Record();
         $record->user_id = Auth::id();
         $record->weight = $request->input('weight');
@@ -120,6 +130,7 @@ class MainController extends Controller
         $record->post_at = Carbon::now();
         $record->save();
         
+        // 保存された記録からアクションポイントを算出
         $recordSkip1Get = Record::where('user_id', Auth::id())->orderBy('id', 'desc')->skip(1)->first();
         if($recordSkip1Get !== null) {
             $record->get_action_point = self::calcurateActionPoint($recordSkip1Get->weight, $record->weight);
@@ -134,6 +145,7 @@ class MainController extends Controller
         
         $record->save();
         
+        // アクションポイントを追加
         $quest = Quest::where('user_id', Auth::id())->orderBy('created_at', 'desc')->first();
         if($quest !== null and $carbonJapaneseNotation < $quest->end_at) {
             $quest->action_point += $record->get_action_point;
@@ -153,12 +165,7 @@ class MainController extends Controller
     public function update(Request $request)
     {
         $user = Auth::user();
-        $recordRecently = Record::where('user_id', Auth::id())->orderBy('id', 'desc')->value('post_at');
-        $carbonJapaneseNotation = Carbon::now();
-        $recordId = Record::where('user_id', Auth::id())->orderBy('id', 'desc')->value('id');
-        if($recordRecently === $carbonJapaneseNotation) {
-            return redirect()->route('mains.index', ['main' => $recordId]);
-        }
+        $carbonJapaneseNotation = Carbon::now()->format('n/d');
         
         $record = Record::orderBy('id', 'desc')->first();
         $record->weight = $request->input('weight');
@@ -171,6 +178,7 @@ class MainController extends Controller
         return redirect()->route('mains.index', ['main' => $record->id]);
     }
 
+    // アクションポイントの取得量計算
     private static function calcurateActionPoint($beforeWeight, $nowWeight)
     {
         $baseActionPoint = 100;
@@ -181,6 +189,7 @@ class MainController extends Controller
         return floor($actionPoint);
     }
     
+    // 次のレベルに必要な経験値
     private static function calcurateRequiredLevel($level)
     {
         $level_up_point = 100;
@@ -194,9 +203,10 @@ class MainController extends Controller
         return floor($score);
     }
     
-    private static function calcurateRank($rank)
+    // 次のランクに必要な経験値
+    private static function calcurateRequiredRank($rank)
     {
-        $rankUpPoint = 1000;
+        $rankUpPoint = 500;
         $rate = 1.2;
         $scoreToExp = 0;
         

@@ -6,9 +6,12 @@
         <p style="margin:0;"><b>ポイント：{{$user->point}}</b></p>
     </div>
     
+    <!--アップグレード-->
     @foreach($skills as $skill)
         @if(in_array($skill->id, $possessionSkillIds))
             <div class="card card-body mb-1 shadow-sm">
+                
+                <!--ヒール-->
                 @if($skill->id == 1)
                     <div class="text-right">
                         <p class="skill-level-under">Lv：{{$heal->level}}</p>
@@ -47,6 +50,7 @@
                                 </div>
                             </div>
                         </div>
+                        
                         @if($user->point < $heal->required_upgrade_points)
                             <div class="text-right mt-5">
                                 <button class="diet-button diet-button-danger">
@@ -61,6 +65,8 @@
                             </div>
                         @endif
                     </div>
+                
+                <!--ファイア-->    
                 @elseif($skill->id == 2)
                     <div class="text-right">
                         <p class="skill-level-under">Lv：{{$fire->level}}</p>
@@ -99,6 +105,7 @@
                                 </div>
                             </div>
                         </div>
+                        
                         @if($user->point < $fire->required_upgrade_points)
                             <div class="text-right mt-5">
                                 <button class="diet-button diet-button-danger">
@@ -113,6 +120,8 @@
                             </div>
                         @endif
                     </div>
+                
+                <!--アイス-->
                 @elseif($skill->id == 3)
                     <div class="text-right">
                         <p class="skill-level-under">Lv：{{$ice->level}}</p>
@@ -165,7 +174,10 @@
                             </div>
                         @endif
                     </div>
+                
+                <!--鍛える-->
                 @elseif($skill->id == 4)
+                    <!--スキル詳細-->
                     <div class="text-right">
                         <p class="skill-level-under">Lv：{{$poison->level}}</p>
                     </div>
@@ -217,6 +229,8 @@
                             </div>
                         @endif
                     </div>
+                    
+                <!--貫通攻撃-->
                 @elseif($skill->id == 5)
                     <div class="text-right">
                         <p class="skill-level-under">Lv：{{$train->level}}</p>
@@ -272,14 +286,17 @@
                 @endif
             </div>
             
-            <!-- モーダル -->
+            <!--モーダル（アップグレード）-->
             <div class="modal fade" id="upgrade{{$skill->id}}" tabindex="-1" role="dialog" aria-labelledby="label1" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered" role="document">
                     <div class="modal-content">
                         <div class="text-center mt-4 mb-2 pb-1" style="border-bottom: 2.1px solid #e8e8e8;" id="label1">
                             <h4>アップグレードしますか？</h4>
                         </div>
+                        <!--選択したスキルをアップグレード-->
                         <div class="modal-body text-center">
+                            
+                            <!--ヒール-->
                             @if($skill->id == 1)
                                 <div class="text-center">
                                     <p class="list-arrow-sub">Lv</p>
@@ -313,6 +330,8 @@
                                         </div>
                                     </div>
                                 </div>
+                            
+                            <!--ファイヤ-->
                             @elseif($skill->id == 2)
                                 <div class="text-center">
                                     <p class="list-arrow-sub">Lv</p>
@@ -346,6 +365,8 @@
                                         </div>
                                     </div>
                                 </div>
+                            
+                            <!--アイス-->
                             @elseif($skill->id == 3)
                                 <div class="text-center">
                                     <p class="list-arrow-sub">Lv</p>
@@ -379,6 +400,8 @@
                                         </div>
                                     </div>
                                 </div>
+                            
+                            <!--鍛える-->
                             @elseif($skill->id == 4)
                                 <div class="text-center">
                                     <p class="list-arrow-sub">Lv</p>
@@ -412,6 +435,8 @@
                                         </div>
                                     </div>
                                 </div>
+                            
+                            <!--貫通攻撃-->
                             @elseif($skill->id == 5)
                                 <div class="text-center">
                                     <p class="list-arrow-sub">Lv</p>
@@ -459,7 +484,8 @@
                     </div>
                  </div>
             </div>
-            
+         
+        <!--スキル習得-->    
         @else
             <div class="card card-body mb-1 shadow-sm">
                 <div class="container">
@@ -491,7 +517,8 @@
                             </button>
                         </div>    
                         
-                        <!-- モーダル -->
+                        <!--モーダル（習得）-->
+                        <!--スキルを選択して、習得-->
                         <div class="modal fade" id="modal{{$skill->id}}" tabindex="-1" role="dialog" aria-labelledby="label1" aria-hidden="true">
                             <div class="modal-dialog modal-dialog-centered" role="document">
                                 <div class="modal-content">

@@ -11,6 +11,7 @@
     </table>
 </div>
 
+<!--表示する月の記録を選択-->
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-3 text-right">
@@ -42,6 +43,7 @@
     </div>
 </div>
               
+<!--セレクトボックスで表示する月の記録を選択-->
 <div class=" text-center footer-container-calendar">
     <form method="POST" action="/records">
         @csrf
@@ -98,6 +100,7 @@
     </div>
 </div>
 
+<!--表示したい月の処理-->
 <script>
     function generate_year_range(start, end) {
         var years = "";
@@ -113,6 +116,7 @@
     var selectYear = document.getElementById("year");
     var selectMonth = document.getElementById("month");
     
+    // セレクトボックスで選択できる年
     var createYear = generate_year_range(1970, 2200);
     
     document.getElementById("year").innerHTML = createYear;
@@ -135,24 +139,28 @@
     
     showCalendar(currentMonth, currentYear);
     
+    // 次の月を表示
     function next() {
         currentYear = (currentMonth === 11) ? currentYear + 1 : currentYear;
         currentMonth = (currentMonth + 1) % 12;
         showCalendar(currentMonth, currentYear);
     }
     
+    // 前の月を表示
     function previous() {
         currentYear = (currentMonth === 0) ? currentYear - 1 : currentYear;
         currentMonth = (currentMonth === 0) ? 11 : currentMonth - 1;
         showCalendar(currentMonth, currentYear);
     }
     
+    // セレクトボックスで月を表示
     function jump() {
         currentYear = parseInt(selectYear.value);
         currentMonth = parseInt(selectMonth.value);
         showCalendar(currentMonth, currentYear);
     }
     
+    // 表示される年月を処理
     function showCalendar(month, year) {
     
         var firstDay = ( new Date( year, month ) ).getDay();

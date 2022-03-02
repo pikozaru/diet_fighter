@@ -3,27 +3,34 @@
 @section('ranking_content')
 <h2 class="mx-auto text-center under mt-4 mb-4" style="width:9em">ランキング</h2>
 
+<!--タブ選択-->
 <ul class="nav justify-content-center nav-pills text-center">
+    <!--クエストスコアランキング-->
     <li class="nav-item">
         <a href="#quest" class="nav-link active" data-toggle="tab" style="border-radius:20px 0 0 0; border: 1px solid #ffcb42;">クエスト</a>
     </li>
+    <!--総合スコアランキング-->        
     <li class="nav-item">
         <a href="#total" class="nav-link" data-toggle="tab" style="border-radius:0 20px 0 0; border: 1px solid #ffcb42;">総合</a>
     </li>
 </ul>
 
+<!--期間を選択-->
 <div class="card mb-1">
     <div class="card-body shadow-sm">
         <div class="tab-content">
             <div id="quest" class="tab-pane active">
                 
+                <!--セレクトボックス-->
                 <select class="form-control mb-4 text-center" id="sample" onchange="viewChange();" style="width:100px; margin: 0 0 0 auto;">
                     <option value="select1">7日間</option>
                     <option value="select2">14日間</option>
                     <option value="select3">30日間</option>
                 </select>
                 
+                <!--7日間のランキング-->
                 <div id="Box1">
+                    <!--自分のランキング-->
                     <div class="text-center">
                         <h4 class="list-arrow-sub mb-4">あなたのスコア</h4>
                         <div style="overflow-x: auto;">
@@ -52,6 +59,7 @@
                         </div>
                     </div>
             
+                    <!--他のプレイヤーランキング-->
                     <div class="text-center">
                         <h4 class="text-center mt-5 mb-4 list-arrow-sub">みんなのスコア</h4>
                     </div>
@@ -103,7 +111,10 @@
                     </div>
                     <p class="text-center heading-color mt-3">※スコアが0の場合、ランキングに乗りません。</p>
                 </div>
+                
+                <!--14日のランキング-->
                 <div id="Box2" style="display:none;">
+                    <!--自分のランキング-->
                     <div class="text-center">
                         <h4 class="list-arrow-sub mb-4">あなたのスコア</h4>
                         
@@ -133,6 +144,7 @@
                         </div>
                     </div>
             
+                    <!--他のプレイヤーランキング-->
                     <div class="text-center">
                         <h4 class="text-center mt-5 mb-4 list-arrow-sub">みんなのスコア</h4>
                     </div>
@@ -184,7 +196,10 @@
                     </div>
                     <p class="text-center heading-color mt-3">※スコアが0の場合、ランキングに乗りません。</p>
                 </div>
+                
+                <!--14日のランキング-->
                 <div id="Box3" style="display:none;">
+                    <!--自分のランキング-->
                     <div class="text-center">
                         <h4 class="list-arrow-sub mb-4">あなたのスコア</h4>
                     
@@ -214,6 +229,7 @@
                         </div>
                     </div>
             
+                    <!--他のプレイヤーランキング-->
                     <div class="text-center">
                         <h4 class="text-center mt-5 mb-4 list-arrow-sub">みんなのスコア</h4>
                     </div>
@@ -290,7 +306,10 @@
                     }
                 </script>
             </div>
+            
+            <!--総合ランキング-->
             <div id="total" class="tab-pane">
+                <!--自分のランキング-->
                 <div class="text-center">
                     <h4 class="list-arrow-sub mb-4">あなたのスコア</h4>
                 
@@ -318,8 +337,9 @@
                     </div>
                 </div>
                 
+                <!--他のプレイヤーランキング-->
                 <div class="text-center">
-                    <h4 class="text-center mt-3 mb-4 list-arrow-sub">総合スコア</h4>
+                    <h4 class="text-center mt-3 mb-4 list-arrow-sub">みんなの総合スコア</h4>
                 
                     <div style="height:300px; overflow-x: hidden; overflow-y: scroll; border-top: 5px solid #ffcb42;">
                         <table class="table" style="border:none;">

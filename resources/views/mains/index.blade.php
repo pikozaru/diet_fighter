@@ -5,6 +5,8 @@
         <div class="card mb-1">
             <div class="card-body shadow-sm">
                 <div class="container">
+                    
+                    <!--記録が初めての場合-->
                     @if($record == null)
                         <h4 class="text-center heading-color under mb-3">記録なし</h4>
                         <div class="row justify-content-center d-flex align-items-start">
@@ -29,7 +31,7 @@
                             <button type="button" class="diet-button diet-button-enter w-50 mb-4" data-toggle="modal" data-target="#create">入力する</button>
                         </div>
                                 
-                        <!-- モーダル -->
+                        <!--モーダル（記録入力画面）-->
                         <div class="modal fade" id="create" tabindex="-1" role="dialog" aria-labelledby="label1" aria-hidden="true">
                             <div class="modal-dialog modal-dialog-centered" role="document">
                                 <div class="modal-content">
@@ -55,6 +57,8 @@
                                 </div>
                             </div>
                         </div>
+                    
+                    <!--本日中にすでに記録をしている場合-->
                     @elseif($recordRecently === $carbonJapaneseNotation)
                         <h4 class="text-center heading-color under mb-3">Today</h4>
                         <div class="row justify-content-center d-flex align-items-start">
@@ -118,7 +122,7 @@
                             <button type="button" class="diet-button diet-button-enter w-75 mt-3 mb-2" data-toggle="modal" data-target="#edit">変更する</button>
                         </div>
                                     
-                        <!-- モーダル -->
+                        <!--モーダル（記録変更画面）-->
                         <div class="modal fade" id="edit" tabindex="-1" role="dialog" aria-labelledby="label1" aria-hidden="true">
                             <div class="modal-dialog modal-dialog-centered" role="document">
                                 <div class="modal-content">
@@ -149,6 +153,8 @@
                                 </div>
                             </div>
                         </div>
+                    
+                    <!--前日までの記録しかない場合-->
                     @elseif($recordRecently !== $carbonJapaneseNotation)
                         <h4 class="text-center heading-color under mb-3">Last Time</h4>
                         <div class="row justify-content-center d-flex align-items-start">
@@ -212,7 +218,7 @@
                             <button type="button" class="diet-button diet-button-enter w-75 mt-3 mb-2" data-toggle="modal" data-target="#create">入力する</button>
                         </div>
                                 
-                        <!-- モーダル -->
+                        <!--モーダル（記録入力画面）-->
                         <div class="modal fade" id="create" tabindex="-1" role="dialog" aria-labelledby="label1" aria-hidden="true">
                             <div class="modal-dialog modal-dialog-centered" role="document">
                                 <div class="modal-content">
@@ -243,6 +249,7 @@
             </div>
         </div>
         
+        <!--グラフ-->
         <ul class="nav nav-pills justify-content-center mt-4 text-center">
             <li class="nav-item">
                 <a href="#w1w" class="nav-link active" data-toggle="tab" style="border-radius:10px 0 0 10px; border: 1px solid #ffcb42;">7日間</a>
@@ -251,6 +258,8 @@
                 <a href="#w1m" class="nav-link" data-toggle="tab" style="border-radius:0 10px 10px 0; border: 1px solid #ffcb42;">30日間</a>
             </li>
         </ul>
+        
+        <!--グラフ（一週間）-->
         <div class="tab-content">
             <div id="w1w" class="tab-pane active">
         
@@ -307,6 +316,7 @@
                 	});
                 </script>
             </div>
+            <!--グラフ（一ヶ月）-->
             <div id="w1m" class="tab-pane horizontal-list">
         
                 <div class="chart-container chart-width">
@@ -366,6 +376,7 @@
         
     </div>
     
+    <!--ランク表示-->
     <div class="card mb-1">
         <div class="card-body shadow-sm">
             <div class="text-center">
@@ -378,8 +389,9 @@
         </div>
     </div>
     
+    <!--ランク経験値バー-->
     <script>
-        var exp = @json($exp);
+        var exp = @json($rankExp);
         var bar = new ProgressBar.Line(container, {
           strokeWidth: 3,
           easing: 'easeInOut',
@@ -409,6 +421,7 @@
         bar.animate(exp);
     </script>
 
+    <!--進行中のクエストを表示-->
     @if($quest !== null)
         <div class="card shadow-sm">
             <div class="card-body">
@@ -446,9 +459,10 @@
             </div>
         </div>
     @endif
-           
+        
+    <!--レベル経験値バー-->       
     <script>
-        var nowExp = @json($nowExp);
+        var levelExp = @json($levelExp);
         var bar = new ProgressBar.Line(containerExp, {
           strokeWidth: 4,
           easing: 'easeInOut',
@@ -464,6 +478,6 @@
           }
         });
         
-        bar.animate(nowExp);
+        bar.animate(levelExp);
 </script>
 @endsection

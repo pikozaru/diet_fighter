@@ -11,6 +11,7 @@ class UserInformationController extends Controller
 {
     public function index()
     {
+        // ユーザー情報取得
         $user = Auth::user();
         $carbonNow = Carbon::now();
         

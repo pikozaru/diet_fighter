@@ -5,6 +5,7 @@
     <div class="card-body shadow-sm">
         <div class="container">
             <h4 class="text-center heading-color under mb-3">{{$record->post_at->format('n/d')}}</h4>
+            <!--その日の記録-->
             <div class="row justify-content-center d-flex align-items-start">
                 <div class="col-3 text-center">
                     <p class="heading-color">BMI</p>
@@ -27,6 +28,7 @@
                 </div>
             </div>
             
+            <!--その日の前日の記録と比較-->
             <div class="text-center">
                 <p class="list-arrow-sub mt-4">前回と比較</p>
             </div>
@@ -60,6 +62,7 @@
                 </div>
             </div>
             
+            <!--本日の記録と比較-->
             <div class="text-center mt-3">
                 @if($recordNow->post_at->format('Y/m/d') == $carbonJapaneseNotation)
                     <p class="list-arrow-sub">本日と比較</p>

@@ -24,6 +24,7 @@ class SkillController extends Controller
      */
     public function create()
     {
+        // スキルを選択
         $skills = Skill::all();
         $possessionSkillIds = PossessionSkills::where('user_id', Auth::id())->pluck('skill_id')->toArray();
         $heal = PossessionSkills::where('user_id', Auth::id())->where('skill_id', 1)->first();
@@ -44,15 +45,19 @@ class SkillController extends Controller
      */
     public function store(Request $request, User $user )
     {
+        // スキル習得処理
         $possessionSkill = new PossessionSkills;
         $possessionSkill->user_id = Auth::id();
         $possessionSkill->skill_id = $request->input('skill_id');
+        
+        // 習得したスキルを取得
         $skill = Skill::where('id', $request->input('skill_id'))->first();
         $possessionSkill->magnification = $skill->first_magnification;
         $possessionSkill->required_upgrade_points = $skill->required_points * ($skill->upgrade_magnification + 3);
         $possessionSkill->upgrade_magnification = $skill->upgrade_magnification;
         $possessionSkill->save();
         
+        // ポイントを引く
         $user = Auth::user();
         $user->point -= Skill::where('id', $possessionSkill->skill_id)->value('required_points');
         $user->update();
@@ -63,12 +68,15 @@ class SkillController extends Controller
     
     public function levelUp(Request $request)
     {
+        // スキルレベルアップの処理
         $possessionSkillLevelUp = PossessionSkills::where('user_id', Auth::id())->where('skill_id', $request->input('skill_id'))->first();
         $user = Auth::user();
         
+        // ポイントを引く
         $user->point -= $possessionSkillLevelUp->required_upgrade_points;
         $user->save();
         
+        // スキルステータスの上昇
         if($request->input('skill_id') === "1") {
             $possessionSkillLevelUp->magnification += 2;
         } elseif($request->input('skill_id') === "3") {
@@ -86,31 +94,10 @@ class SkillController extends Controller
     
     public function index()
     {
+        // スキル一覧
         $possessionSkills = PossessionSkills::where('user_id', Auth::id())->orderBy('skill_id', 'asc')->get();
         
         return view('skills.index', compact('possessionSkills'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        //
-    }
 }
