@@ -113,13 +113,17 @@
                             </div>
                         </div>
                         
+                        <div class="text-center">
+                            <button type="button" class="diet-button diet-button-enter w-75 mt-3 mb-2" data-toggle="modal" data-target="#edit">変更する</button>
+                        </div>
+                        
                         <div class="text-center mt-3">    
                             <h5 class="list-arrow-sub">アクションポイント</h5>
                             <p><b class="mr-1" style="font-size:30px;">{{$record->get_action_point}}</b>GET</p>
                         </div>
                         
                         <div class="text-center">
-                            <button type="button" class="diet-button diet-button-enter w-75 mt-3 mb-2" data-toggle="modal" data-target="#edit">変更する</button>
+                            <a class="btn diet-button diet-button-enter w-50 mt-4" href="{{ route('quests.create') }}">クエストへ</a>
                         </div>
                                     
                         <!--モーダル（記録変更画面）-->
@@ -207,11 +211,6 @@
                                     <b class="number-sub" style="color: #66cdaa;">{{$bodyFatPercentageSub}}%</b>
                                 @endif
                             </div>
-                        </div>
-                        
-                        <div class="text-center mt-3">    
-                            <h5 class="list-arrow-sub">アクションポイント</h5>
-                            <p><b class="mr-1" style="font-size:30px;">{{$record->get_action_point}}</b>GET</p>
                         </div>
                         
                         <div class="text-center">

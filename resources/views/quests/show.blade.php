@@ -309,6 +309,7 @@
                             @endif
                         </div>
                         <div class="modal-footer" style="border-top: 2.1px solid #e8e8e8;">
+                            <button type="button" class="diet-button diet-button-result-back" style="border-radius: 20px;" data-dismiss="modal">戻る</button>
                             <a class="diet-button diet-button-result text-center" style="border-radius: 20px;" href="{{ route('quests.rankCount', ['quest' => $quest->id]) }}">
                                 リザルトへ
                             </a>

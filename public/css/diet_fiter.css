@@ -762,6 +762,19 @@ fieldset {
   border: 1px solid #53d1bd;
 }
 
+.diet-button-result-back {
+  border-radius: 7px;
+  background-color: #fff;
+  color: #53d1bd;
+  border: 1px solid #53d1bd;
+}
+
+.diet-button-result-back:hover {
+  background-color: #53d1bd;
+  color: #fff;
+  border: 1px solid #53d1bd;
+}
+
 .list-arrow-enemy {
   position: relative;
   display: inline-block;
